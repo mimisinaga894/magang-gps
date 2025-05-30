@@ -10,11 +10,7 @@ class Absensi extends Model
     protected $table = 'absensi';
 
     protected $fillable = [
-<<<<<<< HEAD
         'karyawan_id',
-=======
-        'user_id',
->>>>>>> origin/main
         'tanggal',
         'jadwal_masuk',
         'jadwal_pulang',
