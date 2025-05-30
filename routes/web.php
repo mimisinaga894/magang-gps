@@ -9,11 +9,16 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\PresensiController;
-use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\LokasiKantorController;
 use App\Http\Controllers\ProfileController;
-use Laravel\Socialite\Facades\Socialite;
+
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route(Auth::user()->role . '.dashboard');
+    }
+    return redirect()->route('login');
+});
 
 // ==================== AUTH & PROFILE ==================== //
 Route::get('/login', function () {
@@ -69,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
 
         // Departemen
+        Route::get('/departemen', [AdminController::class, 'departemen'])->name('admin.departemen');
         Route::get('/admin/data-departemen', [AdminController::class, 'dataDepartemen'])->name('admin.dataDepartemen');
         Route::post('/departemen/tambah', [DepartemenController::class, 'store'])->name('admin.departemen.store');
         Route::get('/departemen/perbarui', [DepartemenController::class, 'edit'])->name('admin.departemen.edit');

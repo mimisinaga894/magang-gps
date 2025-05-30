@@ -2,42 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Karyawan extends Authenticatable
 {
-    use HasFactory, Notifiable;
-
-    protected $table = "karyawan";
-    protected $primaryKey = "nik";
-    protected $guard = "karyawan";
+    protected $table = 'karyawan';
+    protected $primaryKey = 'nik';
+    protected $keyType = 'string';
 
     protected $fillable = [
         'nik',
-        'departemen_id',
+        'id_departemen',
         'nama_lengkap',
         'jabatan',
         'telepon',
         'email',
-        'password',
+        'password'
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected function casts(): array
+    public function departemen(): BelongsTo
     {
-        return [
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Departemen::class, 'id_departemen', 'id');
     }
 
-    public function departemen()
+    public function absensi(): HasMany
     {
-        return $this->belongsTo(Departemen::class);
+        return $this->hasMany(Absensi::class, 'id_karyawan', 'nik');
     }
 }

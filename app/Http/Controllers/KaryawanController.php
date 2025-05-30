@@ -12,11 +12,11 @@ class KaryawanController extends Controller
     // Dashboard karyawan (contoh)
     public function showDashboard()
     {
-        $absensis = Absensi::where('user_id', Auth::id())
+        $absensi = Absensi::where('user_id', Auth::id())
             ->orderBy('tanggal', 'desc')
             ->get();
 
-        return view('karyawan.dashboard', compact('absensis'));
+        return view('karyawan.dashboard', compact('absensi'));
     }
 
     // Absen Masuk (tanpa validasi lokasi)

@@ -13,34 +13,24 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
-
-
     public function showDashboard()
-    {
-
-        $users = User::all();
-
-        return view('admin.dashboard', compact('users'));
-    }
-
-    public function index()
     {
         $today = Carbon::today();
 
         $departemenData = DB::table('departemen as d')
-            ->leftJoin('karyawan as k', 'k.id_departemen', '=', 'd.id_departemen')
+            ->leftJoin('karyawan as k', 'k.id_departemen', '=', 'd.id')
             ->leftJoin('absensi as a', function ($join) use ($today) {
-                $join->on('a.id_karyawan', '=', 'k.id_karyawan')
-                    ->whereDate('a.tanggal_absensi', $today);
+                $join->on('a.id_karyawan', '=', 'k.nik')
+                    ->whereDate('a.tanggal', $today);
             })
             ->select(
-                'd.nama_departemen',
-                DB::raw('COUNT(k.id_karyawan) as jumlah_karyawan'),
+                'd.nama',
+                DB::raw('COUNT(DISTINCT k.nik) as jumlah_karyawan'),
                 DB::raw("SUM(CASE WHEN a.status = 'Hadir' THEN 1 ELSE 0 END) as jumlah_hadir"),
                 DB::raw("SUM(CASE WHEN a.status = 'Sakit' THEN 1 ELSE 0 END) as jumlah_sakit"),
                 DB::raw("SUM(CASE WHEN a.status = 'Izin' THEN 1 ELSE 0 END) as jumlah_izin")
             )
-            ->groupBy('d.id_departemen')
+            ->groupBy('d.id', 'd.nama')
             ->get();
 
         // Data absensi mingguan untuk chart

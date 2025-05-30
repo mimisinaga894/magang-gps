@@ -167,11 +167,11 @@
                     <div class="card shadow-sm">
                         <div class="card-header">Dashboard Karyawan</div>
                         <div class="card-body">
-                            @if(session('success'))
-                            <div class="alert alert-success mt-3">{{ session('success') }}</div>
+                            @if (session('success'))
+                                <div class="alert alert-success mt-3">{{ session('success') }}</div>
                             @endif
-                            @if(session('error'))
-                            <div class="alert alert-danger mt-3">{{ session('error') }}</div>
+                            @if (session('error'))
+                                <div class="alert alert-danger mt-3">{{ session('error') }}</div>
                             @endif
 
                             <form id="absenForm" action="{{ route('absen.masuk') }}" method="POST">
@@ -211,7 +211,8 @@
     </main>
 
     <!-- Modal Riwayat Absensi -->
-    <div class="modal fade" id="attendanceModal" tabindex="-1" aria-labelledby="attendanceModalLabel" aria-hidden="true">
+    <div class="modal fade" id="attendanceModal" tabindex="-1" aria-labelledby="attendanceModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
@@ -228,28 +229,28 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($absensis as $absen)
-                            <tr>
-                                <td>{{ \Carbon\Carbon::parse($absen->tanggal)->translatedFormat('d F Y') }}</td>
-                                <td>{{ $absen->jam }}</td>
-                                <td>
-                                    @if($absen->status === 'Hadir')
-                                    <span class="badge bg-success">Hadir</span>
-                                    @elseif($absen->status === 'Izin')
-                                    <span class="badge bg-warning text-dark">Izin</span>
-                                    @elseif($absen->status === 'Cuti')
-                                    <span class="badge bg-primary">Cuti</span>
-                                    @elseif($absen->status === 'Sakit')
-                                    <span class="badge bg-danger">Sakit</span>
-                                    @else
-                                    <span class="badge bg-secondary">{{ $absen->status }}</span>
-                                    @endif
-                                </td>
-                            </tr>
+                            @forelse($absensi as $absen)
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($absen->tanggal)->translatedFormat('d F Y') }}</td>
+                                    <td>{{ $absen->jam }}</td>
+                                    <td>
+                                        @if ($absen->status === 'Hadir')
+                                            <span class="badge bg-success">Hadir</span>
+                                        @elseif($absen->status === 'Izin')
+                                            <span class="badge bg-warning text-dark">Izin</span>
+                                        @elseif($absen->status === 'Cuti')
+                                            <span class="badge bg-primary">Cuti</span>
+                                        @elseif($absen->status === 'Sakit')
+                                            <span class="badge bg-danger">Sakit</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $absen->status }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="3" class="text-center">Belum ada data absensi.</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center">Belum ada data absensi.</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>

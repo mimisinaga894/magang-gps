@@ -15,7 +15,7 @@ class AuthController extends Controller
     // Menampilkan form registrasi
     public function register(Request $request)
     {
-        \Log::info('Registrasi data:', $request->all());
+        // Log::info('Registrasi data:', $request->all());
 
         // Validasi input dan simpan ke variabel
         $validated = $request->validate([
@@ -41,9 +41,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return $user->role === 'admin'
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('karyawan.dashboard');
+        return redirect()->route($user->role . '.dashboard');
     }
 
 
@@ -71,7 +69,6 @@ class AuthController extends Controller
                 return redirect()->route('karyawan.dashboard');
             }
         } else {
-
             return back()->withErrors(['username' => 'Username atau password salah.']);
         }
     }
@@ -89,22 +86,44 @@ class AuthController extends Controller
     // Callback untuk Google Login
     public function handleGoogleCallback()
     {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
-        $user = User::firstOrCreate([
-            'email' => $googleUser->getEmail(),
-        ], [
-            'name' => $googleUser->getName(),
-            'password' => bcrypt(str()->random(24)),
-            'role' => 'karyawan',
-        ]);
+            // Log semua data yang dikembalikan Google
+            Log::info('Google User Data:', [
+                'id' => $googleUser->getId(),
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'avatar' => $googleUser->getAvatar(),
+                'token' => $googleUser->token,
+                'refreshToken' => $googleUser->refreshToken,
+                'expiresIn' => $googleUser->expiresIn,
+                'raw' => $googleUser->getRaw(),
+            ]);
 
-        Auth::login($user);
+            $user = User::firstOrCreate([
+                'email' => $googleUser->getEmail(),
+            ], [
+                'name' => $googleUser->getName(),
+                'username' => explode('@', $googleUser->getEmail())[0],
+                'password' => bcrypt(str()->random(24)),
+                'role' => 'karyawan',
+                'google_id' => $googleUser->getId(),
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken,
+            ]);
 
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'karyawan') {
-            return redirect()->route('karyawan.dashboard');
+            Auth::login($user);
+
+            return redirect()->route($user->role . '.dashboard');
+        } catch (\Exception $e) {
+            Log::error('Google Login Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('login')
+                ->withErrors(['error' => 'Gagal login dengan Google. Silakan coba lagi.']);
         }
     }
 }
