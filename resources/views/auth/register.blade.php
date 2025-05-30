@@ -6,19 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Sistem Absensi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background: #f5f5f5;
-            font-family: 'Arial', sans-serif;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-image: url("{{ asset('img/logoo.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 0;
         }
 
         .register-container {
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            max-width: 900px;
+            align-items: stretch;
+            max-width: 960px;
             margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
             padding: 20px;
         }
 
@@ -26,48 +45,72 @@
         .info-side {
             flex: 1;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 15px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            box-sizing: border-box;
         }
 
         .form-side {
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .info-side {
-            background: #0097B2;
+            background: linear-gradient(135deg, #0097B2, #007C8C);
             color: white;
             text-align: center;
-            padding-top: 30px;
-            min-height: 153vh;
-            max-width: 900px;
+        }
+
+        .form-title {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #0097B2;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-size: 1em;
+            width: 100%;
         }
 
         .form-control:focus {
-            box-shadow: none;
             border-color: #0097B2;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 151, 178, 0.4);
         }
 
         .btn-primary {
             background-color: #0097B2;
+            color: white;
             border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            width: 100%;
         }
 
         .btn-primary:hover {
             background-color: #007C8C;
         }
 
-        .logo-img {
-            max-height: 80px;
+        .info-img {
+            max-width: 75%;
+            margin: 0 auto 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .info-img {
-            max-width: 80%;
+        .logo-img {
+            max-height: 70px;
             margin-bottom: 20px;
         }
 
@@ -105,7 +148,6 @@
 
 <body>
     <div class="register-container">
-        <!-- FORM SIDE -->
         <div class="form-side">
             <div class="text-center mb-4">
                 <img src="{{ asset('img/loho.png') }}" alt="Logo" class="logo-img" />
@@ -126,13 +168,12 @@
             <form method="POST" action="{{ route('register') }}">
                 @csrf
 
-                <!-- Nama Lengkap -->
                 <div class="mb-3">
                     <label for="name" class="form-label">Nama Lengkap</label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
                 </div>
 
-                <!-- Username -->
+
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
                     <input type="text" class="form-control" id="username" name="username" value="{{ old('username') }}" required>
@@ -141,7 +182,7 @@
                     @enderror
                 </div>
 
-                <!-- Email -->
+
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
@@ -150,7 +191,7 @@
                     @enderror
                 </div>
 
-                <!-- Jenis Kelamin -->
+
                 <div class="mb-3">
                     <label for="gender" class="form-label">Jenis Kelamin</label>
                     <select class="form-select" id="gender" name="gender" required>
@@ -164,25 +205,24 @@
                 </div>
 
 
-                <!-- Phone -->
                 <div class="mb-3">
                     <label for="phone" class="form-label">Nomor Telepon</label>
                     <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') }}">
                 </div>
 
-                <!-- Alamat -->
+
                 <div class="mb-3">
                     <label for="address" class="form-label">Alamat</label>
                     <textarea class="form-control" id="address" name="address">{{ old('address') }}</textarea>
                 </div>
 
-                <!-- Password -->
+
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
 
-                <!-- Confirm Password -->
+
                 <div class="mb-3">
                     <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
                     <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
@@ -197,7 +237,7 @@
                     </select>
                 </div>
 
-                <!-- Submit Button -->
+
                 <button type="submit" class="btn btn-primary">Daftar</button>
 
                 <div class="text-center mt-2">

@@ -68,7 +68,7 @@
 
         .top-navbar {
             height: 60px;
-            background-color: #007bff;
+            background-color:rgb(109, 179, 253);
             color: white;
             display: flex;
             align-items: center;
@@ -283,6 +283,7 @@
                     @endforeach
                 </tbody>
             </table>
+
             <h2>Data Absensi Departemen Hari Ini ({{ \Carbon\Carbon::today()->format('d M Y') }})</h2>
 
             <table class="table table-bordered mb-5">
