@@ -75,7 +75,6 @@
             border-radius: 8px;
             padding: 12px;
             border: 1px solid #ccc;
-            margin-bottom: 20px;
             font-size: 1em;
             width: 100%;
         }
@@ -168,77 +167,105 @@
             <form method="POST" action="{{ route('register') }}">
                 @csrf
 
-                <div class="mb-3">
-                    <label for="name" class="form-label">Nama Lengkap</label>
-                    <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
+                        name="name" placeholder="Nama Lengkap" value="{{ old('name') }}">
+                    <label for="name">Nama Lengkap</label>
+                    @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" value="{{ old('username') }}" required>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control @error('username') is-invalid @enderror" id="username"
+                        name="username" placeholder="Username" value="{{ old('username') }}">
+                    <label for="username">Username</label>
                     @error('username')
-                    <div class="text-danger">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
+                        name="email" placeholder="Email" value="{{ old('email') }}">
+                    <label for="email">Email</label>
                     @error('email')
-                    <div class="text-danger">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-
-                <div class="mb-3">
-                    <label for="gender" class="form-label">Jenis Kelamin</label>
-                    <select class="form-select" id="gender" name="gender" required>
-                        <option value="" disabled {{ old('gender') ? '' : 'selected' }}>Pilih Jenis Kelamin</option>
+                <div class="form-floating mb-3">
+                    <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
+                        <option value="" disabled selected>Pilih Jenis Kelamin</option>
                         <option value="L" {{ old('gender') == 'L' ? 'selected' : '' }}>Laki-laki</option>
                         <option value="P" {{ old('gender') == 'P' ? 'selected' : '' }}>Perempuan</option>
                     </select>
+                    <label for="gender">Jenis Kelamin</label>
                     @error('gender')
-                    <div class="text-danger">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-
-                <div class="mb-3">
-                    <label for="phone" class="form-label">Nomor Telepon</label>
-                    <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') }}">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone"
+                        name="phone" placeholder="Nomor Telepon" value="{{ old('phone') }}">
+                    <label for="phone">Nomor Telepon</label>
+                    @error('phone')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-
-                <div class="mb-3">
-                    <label for="address" class="form-label">Alamat</label>
-                    <textarea class="form-control" id="address" name="address">{{ old('address') }}</textarea>
+                <div class="form-floating mb-3">
+                    <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" placeholder="Alamat"
+                        style="height: 100px">{{ old('address') }}</textarea>
+                    <label for="address">Alamat</label>
+                    @error('address')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-
-
-                <div class="mb-3">
-                    <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                </div>
-
-                <!-- Role -->
-                <div class="mb-3">
-                    <label for="role" class="form-label">Role</label>
-                    <select class="form-select" id="role" name="role" required>
-                        <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
+                <div class="form-floating mb-3">
+                    <select class="form-select @error('departemen_id') is-invalid @enderror" id="departemen_id"
+                        name="departemen_id">
+                        <option value="" disabled selected>Pilih Departemen</option>
+                        @foreach ($departemens as $departemen)
+                            <option value="{{ $departemen->id }}"
+                                {{ old('departemen_id') == $departemen->id ? 'selected' : '' }}>
+                                {{ $departemen->nama }}
+                            </option>
+                        @endforeach
                     </select>
+                    <label for="departemen_id">Departemen</label>
+                    @error('departemen_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control @error('jabatan') is-invalid @enderror" id="jabatan"
+                        name="jabatan" placeholder="Jabatan" value="{{ old('jabatan') }}">
+                    <label for="jabatan">Jabatan</label>
+                    @error('jabatan')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                <button type="submit" class="btn btn-primary">Daftar</button>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
+                        name="password" placeholder="Password">
+                    <label for="password">Password</label>
+                    @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="password_confirmation"
+                        name="password_confirmation" placeholder="Konfirmasi Password">
+                    <label for="password_confirmation">Konfirmasi Password</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Daftar</button>
 
                 <div class="text-center mt-2">
                     Sudah punya akun? <a href="{{ route('login') }}" class="text-decoration-none">Masuk</a>

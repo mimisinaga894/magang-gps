@@ -77,7 +77,6 @@
             border-radius: 8px;
             padding: 12px;
             border: 1px solid #ccc;
-            margin-bottom: 20px;
             font-size: 1em;
             width: 100%;
         }
@@ -195,20 +194,31 @@
                 <hr>
             </div>
 
-            @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+            @if (session('error') || $errors->has('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') ?? $errors->first('error') }}
+                </div>
             @endif
 
             <form action="{{ route('login.post') }}" method="POST">
                 @csrf
-                <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
-                <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control @error('username') is-invalid @enderror" id="username"
+                        name="username" placeholder="Username" value="{{ old('username') }}">
+                    <label for="username">Username</label>
+                    @error('username')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
+                        name="password" placeholder="Password">
+                    <label for="password">Password</label>
+                    @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 <a href="{{ route('password.request') }}" class="small text-decoration-none">Lupa Password?</a>
 

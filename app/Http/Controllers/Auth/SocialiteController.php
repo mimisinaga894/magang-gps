@@ -66,7 +66,6 @@ class SocialiteController extends Controller
                         'user_id' => $user->id,
                         'nik' => 'K' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
                         'departemen_id' => 1,
-                        'nama_lengkap' => $fullName,
                         'jabatan' => 'Staff'
                     ]);
 

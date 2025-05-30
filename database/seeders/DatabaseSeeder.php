@@ -59,7 +59,6 @@ class DatabaseSeeder extends Seeder
             'nik' => 'K00001',
             'user_id' => $user->id,
             'departemen_id' => 3,
-            'nama_lengkap' => 'Joni Iskandar',
             'jabatan' => 'Software Engineer',
         ]);
     }

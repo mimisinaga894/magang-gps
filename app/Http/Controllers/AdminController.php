@@ -14,28 +14,57 @@ class AdminController extends Controller
     public function showDashboard()
     {
         $today = Carbon::today();
+        $users = User::all();
 
-        $departemenData = Departemen::withCount(['karyawan as hadir_count' => function ($query) use ($today) {
-            $query->whereHas('absensi', function ($q) use ($today) {
-                $q->whereDate('tanggal', $today)->where('status', 'hadir');
-            });
-        }, 'karyawan as telat_count' => function ($query) use ($today) {
-            $query->whereHas('absensi', function ($q) use ($today) {
-                $q->whereDate('tanggal', $today)->where('status', 'telat');
-            });
-        }])->get();
+        $departemenData = Departemen::select('id', 'nama as nama_departemen')
+            ->withCount(['karyawan as jumlah_karyawan'])
+            ->withCount(['karyawan as jumlah_hadir' => function ($query) use ($today) {
+                $query->whereHas('absensi', function ($q) use ($today) {
+                    $q->whereDate('tanggal', $today)
+                        ->where('status', 'hadir');
+                });
+            }])
+            ->withCount(['karyawan as jumlah_sakit' => function ($query) use ($today) {
+                $query->whereHas('absensi', function ($q) use ($today) {
+                    $q->whereDate('tanggal', $today)
+                        ->where('status', 'sakit');
+                });
+            }])
+            ->withCount(['karyawan as jumlah_izin' => function ($query) use ($today) {
+                $query->whereHas('absensi', function ($q) use ($today) {
+                    $q->whereDate('tanggal', $today)
+                        ->where('status', 'izin');
+                });
+            }])
+            ->get();
 
         $weeklyAbsensi = Absensi::whereBetween('tanggal', [
             Carbon::now()->startOfWeek(),
             Carbon::now()->endOfWeek()
         ])
-            ->selectRaw('DATE(tanggal) as date, 
-                        COUNT(CASE WHEN status = "hadir" THEN 1 END) as hadir_count,
-                        COUNT(CASE WHEN status = "telat" THEN 1 END) as telat_count')
+            ->selectRaw('
+            DATE(tanggal) as date,
+            COUNT(CASE WHEN status = "hadir" THEN 1 END) as hadir_count,
+            COUNT(CASE WHEN status = "sakit" THEN 1 END) as sakit_count,
+            COUNT(CASE WHEN status = "izin" THEN 1 END) as izin_count
+        ')
             ->groupBy('date')
-            ->get();
+            ->orderBy('date')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'date' => Carbon::parse($item->date)->format('l'),
+                    'hadir' => $item->hadir_count,
+                    'sakit' => $item->sakit_count,
+                    'izin' => $item->izin_count
+                ];
+            });
 
-        return view('admin.dashboard', compact('departemenData', 'weeklyAbsensi'));
+        return view('admin.dashboard', compact(
+            'users',
+            'departemenData',
+            'weeklyAbsensi'
+        ));
     }
 
     public function dataKaryawan()
@@ -47,7 +76,8 @@ class AdminController extends Controller
     public function editUser($id)
     {
         $user = User::findOrFail($id);
-        return view('admin.edit-user', compact('user'));
+        $departemens = Departemen::all();
+        return view('admin.edit-user', compact('user', 'departemens'));
     }
 
     public function dataDepartemen()
@@ -58,30 +88,42 @@ class AdminController extends Controller
 
     public function updateUser(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:15',
-            'address' => 'nullable|string|max:255',
-            'role' => 'required|in:admin,karyawan',
+            'address' => 'nullable|string',
+            'role' => 'required|in:admin,karyawan'
         ]);
 
         $user = User::findOrFail($id);
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->phone = $request->phone;
-        $user->address = $request->address;
-        $user->role = $request->role;
-        $user->save();
+        $user->update($validated);
 
-        return redirect()->route('admin.dashboard')->with('success', 'User berhasil diperbarui.');
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('success', 'Data pengguna berhasil diperbarui');
     }
 
     public function deleteUser($id)
     {
-        $user = User::findOrFail($id);
-        $user->delete();
+        try {
+            $user = User::findOrFail($id);
 
-        return redirect()->route('admin.dashboard')->with('success', 'User berhasil dihapus.');
+            if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+                return redirect()
+                    ->route('admin.dashboard')
+                    ->with('error', 'Tidak dapat menghapus admin terakhir');
+            }
+
+            $user->delete();
+
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('success', 'Pengguna berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('error', 'Gagal menghapus pengguna');
+        }
     }
 }

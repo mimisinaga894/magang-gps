@@ -68,7 +68,7 @@
 
         .top-navbar {
             height: 60px;
-            background-color:rgb(109, 179, 253);
+            background-color: rgb(109, 179, 253);
             color: white;
             display: flex;
             align-items: center;
@@ -172,7 +172,8 @@
     <div class="sidebar">
         <div>
             <div class="logo text-center mb-4">
-                <img src="{{ asset('img/loho.png') }}" alt="Logo Sistem Absensi" style="max-width: 150px; height: auto;">
+                <img src="{{ asset('img/loho.png') }}" alt="Logo Sistem Absensi"
+                    style="max-width: 150px; height: auto;">
             </div>
             <ul class="nav flex-column px-2">
                 <li class="nav-item">
@@ -218,7 +219,8 @@
                 <li class="nav-item mt-3">
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-link nav-link text-white p-0" style="width: 100%; text-align: left;">
+                        <button type="submit" class="btn btn-link nav-link text-white"
+                            style="width: 100%; text-align: left;">
                             <i class="bi bi-box-arrow-right"></i> Log Out
                         </button>
                     </form>
@@ -240,10 +242,10 @@
         <div class="content-wrapper">
             <h1 class="mb-4">Dashboard Admin</h1>
 
-            @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
             @endif
 
             <div class="mb-4">
@@ -263,23 +265,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($users as $user)
-                    <tr>
-                        <td>{{ $user->id }}</td>
-                        <td>{{ $user->name }}</td>
-                        <td>{{ $user->email }}</td>
-                        <td>{{ $user->phone }}</td>
-                        <td>{{ $user->address }}</td>
-                        <td>{{ $user->role }}</td>
-                        <td>
-                            <a href="{{ route('admin.editUser', $user->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="{{ route('admin.deleteUser', $user->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
+                    @foreach ($users as $user)
+                        <tr>
+                            <td>{{ $user->id }}</td>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>{{ $user->phone }}</td>
+                            <td>{{ $user->address }}</td>
+                            <td>{{ $user->role }}</td>
+                            <td>
+                                <a href="{{ route('admin.editUser', $user->id) }}"
+                                    class="btn btn-warning btn-sm">Edit</a>
+                                <form action="{{ route('admin.deleteUser', $user->id) }}" method="POST"
+                                    class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -298,15 +302,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($departemenData as $index => $dept)
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $dept->nama_departemen }}</td>
-                        <td>{{ $dept->jumlah_karyawan }}</td>
-                        <td>{{ $dept->jumlah_hadir }}</td>
-                        <td>{{ $dept->jumlah_sakit }}</td>
-                        <td>{{ $dept->jumlah_izin }}</td>
-                    </tr>
+                    @foreach ($departemenData as $index => $dept)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $dept->nama_departemen }}</td>
+                            <td>{{ $dept->jumlah_karyawan }}</td>
+                            <td>{{ $dept->jumlah_hadir }}</td>
+                            <td>{{ $dept->jumlah_sakit }}</td>
+                            <td>{{ $dept->jumlah_izin }}</td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -318,7 +322,6 @@
             &copy; 2025 by Mimi Sinaga - Programmer
         </footer>
 
-        s
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

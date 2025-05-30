@@ -28,11 +28,16 @@ class KaryawanController extends Controller
     protected function handleAbsensi(Request $request, string $type)
     {
         try {
-            $validated = $request->validate([
-                'latitude' => 'required|numeric|between:-90,90',
-                'longitude' => 'required|numeric|between:-180,180',
-                'status' => 'required|in:Hadir,Izin,Cuti,Sakit'
+            $request->validate([
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
             ]);
+
+            if ($type === 'masuk') {
+                $request->validate([
+                    'status' => 'required|in:Hadir,Izin,Cuti,Sakit'
+                ]);
+            }
 
             $karyawan = Karyawan::where('user_id', auth()->id())->firstOrFail();
             $now = Carbon::now();
