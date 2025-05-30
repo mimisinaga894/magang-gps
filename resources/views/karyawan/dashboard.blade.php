@@ -147,11 +147,22 @@
 
 <body>
     <nav class="sidebar">
-        <div class="logo">KaryawanApp</div>
+        <img src="{{ asset('img/loho.png') }}" alt="Logo" class="logo-img" />
         <div>
+            <li class="nav-item">
+                <a href="{{ route('') }}" class="nav-link">
+                    <i class="bi bi-gear-fill"></i> Pengaturan Akun
+                </a>
+            </li>
             <a href="#" class="nav-link active">Dashboard</a>
             <a href="#" class="nav-link">Profil</a>
             <a href="#" class="nav-link">Pengaturan</a>
+            <li class="nav-item mt-3">
+                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-link nav-link text-white p-0" style="width: 100%; text-align: left;">
+                        <i class="bi bi-box-arrow-right"></i> Log Out
+                    </button>
         </div>
         <div class="watermark">© 2025 Mimi Sinaga</div>
     </nav>
@@ -168,10 +179,10 @@
                         <div class="card-header">Dashboard Karyawan</div>
                         <div class="card-body">
                             @if (session('success'))
-                                <div class="alert alert-success mt-3">{{ session('success') }}</div>
+                            <div class="alert alert-success mt-3">{{ session('success') }}</div>
                             @endif
                             @if (session('error'))
-                                <div class="alert alert-danger mt-3">{{ session('error') }}</div>
+                            <div class="alert alert-danger mt-3">{{ session('error') }}</div>
                             @endif
 
                             <form id="masukForm" action="{{ route('absen.masuk') }}" method="POST">
@@ -232,27 +243,27 @@
                         </thead>
                         <tbody>
                             @forelse($absensi as $absen)
-                                <tr>
-                                    <td>{{ \Carbon\Carbon::parse($absen->tanggal)->translatedFormat('d F Y') }}</td>
-                                    <td>{{ $absen->jam }}</td>
-                                    <td>
-                                        @if ($absen->status === 'Hadir')
-                                            <span class="badge bg-success">Hadir</span>
-                                        @elseif($absen->status === 'Izin')
-                                            <span class="badge bg-warning text-dark">Izin</span>
-                                        @elseif($absen->status === 'Cuti')
-                                            <span class="badge bg-primary">Cuti</span>
-                                        @elseif($absen->status === 'Sakit')
-                                            <span class="badge bg-danger">Sakit</span>
-                                        @else
-                                            <span class="badge bg-secondary">{{ $absen->status }}</span>
-                                        @endif
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>{{ \Carbon\Carbon::parse($absen->tanggal)->translatedFormat('d F Y') }}</td>
+                                <td>{{ $absen->jam }}</td>
+                                <td>
+                                    @if ($absen->status === 'Hadir')
+                                    <span class="badge bg-success">Hadir</span>
+                                    @elseif($absen->status === 'Izin')
+                                    <span class="badge bg-warning text-dark">Izin</span>
+                                    @elseif($absen->status === 'Cuti')
+                                    <span class="badge bg-primary">Cuti</span>
+                                    @elseif($absen->status === 'Sakit')
+                                    <span class="badge bg-danger">Sakit</span>
+                                    @else
+                                    <span class="badge bg-secondary">{{ $absen->status }}</span>
+                                    @endif
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="3" class="text-center">Belum ada data absensi.</td>
-                                </tr>
+                            <tr>
+                                <td colspan="3" class="text-center">Belum ada data absensi.</td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
