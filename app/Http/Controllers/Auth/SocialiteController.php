@@ -40,14 +40,14 @@ class SocialiteController extends Controller
                 ->orWhere('email', $googleUser->email)
                 ->first();
 
-            if (!$user) {
-                Log::info('Attempting to create new user', [
-                    'name' => $fullName,
-                    'username' => $username,
-                    'email' => $googleUser->email
-                ]);
+            \DB::beginTransaction();
+            try {
+                if (!$user) {
+                    Log::info('Creating new user from Google', [
+                        'name' => $fullName,
+                        'email' => $googleUser->email
+                    ]);
 
-                try {
                     $user = User::create([
                         'name' => $fullName,
                         'username' => $username,
@@ -60,32 +60,34 @@ class SocialiteController extends Controller
                         'gender' => 'L',
                         'email_verified_at' => now(),
                     ]);
-                } catch (\Exception $e) {
-                    Log::error('User creation failed', [
-                        'error' => $e->getMessage(),
-                        'data' => [
-                            'name' => $fullName,
-                            'username' => $username,
-                            'email' => $googleUser->email
-                        ]
+
+                    // Create associated Karyawan record
+                    $karyawan = \App\Models\Karyawan::create([
+                        'user_id' => $user->id,
+                        'nik' => 'K' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
+                        'departemen_id' => 1,
+                        'nama_lengkap' => $fullName,
+                        'jabatan' => 'Staff'
                     ]);
-                    throw $e;
+
+                    Log::info('Created karyawan record', ['karyawan_id' => $karyawan->id]);
                 }
-            } else {
-                $user->update([
-                    'google_token' => $googleUser->token,
-                    'google_refresh_token' => $googleUser->refreshToken,
-                    'email_verified_at' => $user->email_verified_at ?? now(),
+
+                \DB::commit();
+                Auth::login($user, true);
+
+                return redirect()->intended(route($user->role . '.dashboard'))
+                    ->with('success', 'Berhasil login dengan Google.');
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                Log::error('Failed to create user/karyawan', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
 
-                Log::info('Existing user logged in via Google', ['user_id' => $user->id]);
+                throw $e;
             }
-
-            Auth::login($user, true);
-
-            return redirect()->intended(route($user->role . '.dashboard'))
-                ->with('success', 'Berhasil login dengan Google.');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Google callback failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

@@ -10,7 +10,7 @@ class Absensi extends Model
     protected $table = 'absensi';
 
     protected $fillable = [
-        'id_karyawan',
+        'karyawan_id',
         'tanggal',
         'jadwal_masuk',
         'jadwal_pulang',
@@ -24,8 +24,16 @@ class Absensi extends Model
         'keterangan'
     ];
 
+    protected $casts = [
+        'tanggal' => 'date',
+        'jadwal_masuk' => 'datetime',
+        'jadwal_pulang' => 'datetime',
+        'jam_masuk' => 'datetime',
+        'jam_pulang' => 'datetime',
+    ];
+
     public function karyawan(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'id_karyawan', 'nik');
+        return $this->belongsTo(Karyawan::class);
     }
 }

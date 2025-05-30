@@ -174,7 +174,7 @@
                                 <div class="alert alert-danger mt-3">{{ session('error') }}</div>
                             @endif
 
-                            <form id="absenForm" action="{{ route('absen.masuk') }}" method="POST">
+                            <form id="masukForm" action="{{ route('absen.masuk') }}" method="POST">
                                 @csrf
                                 <div class="mb-3">
                                     <label for="status" class="form-label fw-semibold">Pilih Status Kehadiran</label>
@@ -185,8 +185,8 @@
                                         <option value="Sakit">Sakit</option>
                                     </select>
                                 </div>
-                                <input type="hidden" id="latitude" name="latitude" />
-                                <input type="hidden" id="longitude" name="longitude" />
+                                <input type="hidden" name="latitude">
+                                <input type="hidden" name="longitude">
                                 <button type="submit" class="btn btn-success">Absen Sekarang (GPS)</button>
                             </form>
 
@@ -195,8 +195,10 @@
                                 <li class="list-group-item"><strong>Email:</strong> {{ Auth::user()->email }}</li>
                             </ul>
 
-                            <form action="{{ route('absen.pulang') }}" method="POST" class="mt-3">
+                            <form id="pulangForm" action="{{ route('absen.pulang') }}" method="POST" class="mt-3">
                                 @csrf
+                                <input type="hidden" name="latitude">
+                                <input type="hidden" name="longitude">
                                 <button type="submit" class="btn btn-danger">Absen Pulang</button>
                             </form>
 
@@ -267,26 +269,55 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const absenForm = document.getElementById('absenForm');
-            absenForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (navigator.geolocation) {
+            const getLocation = () => {
+                return new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject('Geolocation tidak didukung browser ini');
+                        return;
+                    }
+
                     navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            document.getElementById('latitude').value = position.coords.latitude;
-                            document.getElementById('longitude').value = position.coords.longitude;
-                            absenForm.submit();
-                        },
-                        (error) => {
-                            alert(`Gagal mengambil lokasi: ${error.message}`);
+                        position => resolve(position.coords),
+                        error => reject(error.message), {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
                         }
                     );
-                } else {
-                    alert('Geolocation tidak didukung oleh browser ini.');
+                });
+            };
+
+            const forms = {
+                masuk: document.getElementById('masukForm'),
+                pulang: document.getElementById('pulangForm')
+            };
+
+            Object.entries(forms).forEach(([type, form]) => {
+                if (form) {
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const button = form.querySelector('button[type="submit"]');
+                        button.disabled = true;
+                        button.innerHTML =
+                            '<span class="spinner-border spinner-border-sm"></span> Loading...';
+
+                        try {
+                            const coords = await getLocation();
+                            form.querySelector('[name="latitude"]').value = coords.latitude;
+                            form.querySelector('[name="longitude"]').value = coords.longitude;
+                            form.submit();
+                        } catch (error) {
+                            alert(`Gagal mengambil lokasi: ${error}`);
+                            button.disabled = false;
+                            button.innerHTML = type === 'masuk' ? 'Absen Sekarang (GPS)' :
+                                'Absen Pulang';
+                        }
+                    });
                 }
             });
 
-            document.getElementById('view-attendance-btn').addEventListener('click', () => {
+            // Modal handler
+            document.getElementById('view-attendance-btn')?.addEventListener('click', () => {
                 const modal = new bootstrap.Modal(document.getElementById('attendanceModal'));
                 modal.show();
             });

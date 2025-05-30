@@ -2,33 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Karyawan extends Authenticatable
+class Karyawan extends Model
 {
     protected $table = 'karyawan';
-    protected $primaryKey = 'nik';
-    protected $keyType = 'string';
 
     protected $fillable = [
         'nik',
-        'id_departemen',
+        'user_id',
+        'departemen_id',
         'nama_lengkap',
-        'jabatan',
-        'telepon',
-        'email',
-        'password'
+        'jabatan'
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function departemen(): BelongsTo
     {
-        return $this->belongsTo(Departemen::class, 'id_departemen', 'id');
+        return $this->belongsTo(Departemen::class);
     }
 
     public function absensi(): HasMany
     {
-        return $this->hasMany(Absensi::class, 'id_karyawan', 'nik');
+        return $this->hasMany(Absensi::class);
     }
 }

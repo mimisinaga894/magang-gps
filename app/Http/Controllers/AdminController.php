@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Karyawan;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
+use App\Models\Departemen;
+use App\Models\Absensi;
 use Carbon\Carbon;
-
-
 
 class AdminController extends Controller
 {
@@ -17,70 +15,34 @@ class AdminController extends Controller
     {
         $today = Carbon::today();
 
-        $departemenData = DB::table('departemen as d')
-            ->leftJoin('karyawan as k', 'k.id_departemen', '=', 'd.id')
-            ->leftJoin('absensi as a', function ($join) use ($today) {
-                $join->on('a.id_karyawan', '=', 'k.nik')
-                    ->whereDate('a.tanggal', $today);
-            })
-            ->select(
-                'd.nama',
-                DB::raw('COUNT(DISTINCT k.nik) as jumlah_karyawan'),
-                DB::raw("SUM(CASE WHEN a.status = 'Hadir' THEN 1 ELSE 0 END) as jumlah_hadir"),
-                DB::raw("SUM(CASE WHEN a.status = 'Sakit' THEN 1 ELSE 0 END) as jumlah_sakit"),
-                DB::raw("SUM(CASE WHEN a.status = 'Izin' THEN 1 ELSE 0 END) as jumlah_izin")
-            )
-            ->groupBy('d.id', 'd.nama')
+        $departemenData = Departemen::withCount(['karyawan as hadir_count' => function ($query) use ($today) {
+            $query->whereHas('absensi', function ($q) use ($today) {
+                $q->whereDate('tanggal', $today)->where('status', 'hadir');
+            });
+        }, 'karyawan as telat_count' => function ($query) use ($today) {
+            $query->whereHas('absensi', function ($q) use ($today) {
+                $q->whereDate('tanggal', $today)->where('status', 'telat');
+            });
+        }])->get();
+
+        $weeklyAbsensi = Absensi::whereBetween('tanggal', [
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        ])
+            ->selectRaw('DATE(tanggal) as date, 
+                        COUNT(CASE WHEN status = "hadir" THEN 1 END) as hadir_count,
+                        COUNT(CASE WHEN status = "telat" THEN 1 END) as telat_count')
+            ->groupBy('date')
             ->get();
 
-        // Data absensi mingguan untuk chart
-        $weekStart = Carbon::now()->startOfWeek();
-        $weekEnd = Carbon::now()->endOfWeek();
-
-        $weeklyAbsensi = DB::table('absensi')
-            ->select(
-                DB::raw('DATE(tanggal_absensi) as tanggal'),
-                DB::raw("SUM(CASE WHEN status = 'Hadir' THEN 1 ELSE 0 END) as hadir"),
-                DB::raw("SUM(CASE WHEN status = 'Sakit' THEN 1 ELSE 0 END) as sakit"),
-                DB::raw("SUM(CASE WHEN status = 'Izin' THEN 1 ELSE 0 END) as izin")
-            )
-            ->whereBetween('tanggal_absensi', [$weekStart, $weekEnd])
-            ->groupBy(DB::raw('DATE(tanggal_absensi)'))
-            ->orderBy('tanggal')
-            ->get();
-
-        // Ambil data untuk chart
-        $labels = $weeklyAbsensi->pluck('tanggal')->map(function ($date) {
-            return Carbon::parse($date)->format('d M');
-        });
-
-        $hadirData = $weeklyAbsensi->pluck('hadir');
-        $sakitData = $weeklyAbsensi->pluck('sakit');
-        $izinData = $weeklyAbsensi->pluck('izin');
-
-        $users = DB::table('users')->get();
-
-        return view('admin.dashboard', compact(
-            'departemenData',
-            'weeklyAbsensi',
-            'users',
-            'labels',
-            'hadirData',
-            'sakitData',
-            'izinData'
-        ));
+        return view('admin.dashboard', compact('departemenData', 'weeklyAbsensi'));
     }
-
 
     public function dataKaryawan()
     {
-
-        $karyawan = Karyawan::all();
-
-
-        return view('admin.dataKaryawan', compact('karyawan'));
+        $karyawan = Karyawan::with(['user', 'departemen'])->get();
+        return view('admin.karyawan.index', compact('karyawan'));
     }
-
 
     public function editUser($id)
     {
@@ -90,12 +52,9 @@ class AdminController extends Controller
 
     public function dataDepartemen()
     {
-        $departemen = Departemen::all();
-
-        return view('admin.dataDepartemen', compact('departemen'));
+        $departemen = Departemen::withCount('karyawan')->get();
+        return view('admin.departemen.index', compact('departemen'));
     }
-
-
 
     public function updateUser(Request $request, $id)
     {
@@ -117,7 +76,6 @@ class AdminController extends Controller
 
         return redirect()->route('admin.dashboard')->with('success', 'User berhasil diperbarui.');
     }
-
 
     public function deleteUser($id)
     {

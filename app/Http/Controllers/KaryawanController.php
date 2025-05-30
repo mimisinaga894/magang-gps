@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Karyawan;
 use App\Models\Absensi;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -12,84 +13,98 @@ class KaryawanController extends Controller
     // Dashboard karyawan (contoh)
     public function showDashboard()
     {
-        $absensi = Absensi::where('user_id', Auth::id())
+        $user = Auth::user();
+        $karyawan = Karyawan::where('user_id', $user->id)->first();
+        $karyawan = Karyawan::where('user_id', $user->id)->first();
+
+        $absensi = Absensi::where('karyawan_id', $karyawan->id)
             ->orderBy('tanggal', 'desc')
             ->get();
 
         return view('karyawan.dashboard', compact('absensi'));
     }
 
-    // Absen Masuk (tanpa validasi lokasi)
-    public function absenMasuk(Request $request)
+    // Halaman absen masuk
+    protected function handleAbsensi(Request $request, string $type)
     {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-        ]);
+        try {
+            $validated = $request->validate([
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'status' => 'required|in:Hadir,Izin,Cuti,Sakit'
+            ]);
 
-        $user = Auth::user();
-        $tanggal = Carbon::now()->toDateString();
-        $waktuSekarang = Carbon::now()->toTimeString();
+            $karyawan = Karyawan::where('user_id', auth()->id())->firstOrFail();
+            $now = Carbon::now();
 
-        // Cek sudah absen masuk hari ini
-        $absenHariIni = Absensi::where('user_id', $user->id)
-            ->where('tanggal', $tanggal)
-            ->first();
+            if ($type === 'pulang') {
+                return $this->handleAbsenPulang($karyawan, $request, $now);
+            }
 
-        if ($absenHariIni) {
-            return back()->with('info', 'Anda sudah melakukan absen masuk hari ini.');
+            return $this->handleAbsenMasuk($karyawan, $request, $now);
+        } catch (\Exception $e) {
+            \Log::error("Absen {$type} Error:", [
+                'message' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'data' => $request->all()
+            ]);
+
+            return back()->with('error', 'Gagal melakukan absensi. Pastikan GPS aktif dan izinkan akses lokasi.');
         }
-
-        // Cek status keterlambatan
-        $status = Carbon::now()->gt(Carbon::createFromTime(8, 0, 0)) ? 'telat' : 'hadir';
-
-        // Simpan absen masuk
-        Absensi::create([
-            'user_id' => $user->id,
-            'tanggal' => $tanggal,
-            'jadwal_masuk' => '08:00:00',
-            'jadwal_pulang' => '16:30:00',
-            'jam_masuk' => $waktuSekarang,
-            'status' => $status,
-            'latitude_masuk' => $request->latitude,
-            'longitude_masuk' => $request->longitude,
-        ]);
-
-        return back()->with('success', 'Absen masuk berhasil.');
     }
 
-    // Absen Pulang (tanpa validasi lokasi)
-    public function absenPulang(Request $request)
+    // Handle absen masuk
+    protected function handleAbsenMasuk($karyawan, $request, $now)
     {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+        $exists = Absensi::where('karyawan_id', $karyawan->id)
+            ->whereDate('tanggal', $now)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Sudah absen masuk hari ini');
+        }
+
+        Absensi::create([
+            'karyawan_id' => $karyawan->id,
+            'tanggal' => $now,
+            'jam_masuk' => $now,
+            'latitude_masuk' => $request->latitude,
+            'longitude_masuk' => $request->longitude,
+            'status' => $now->gt(Carbon::createFromTime(8, 0)) ? 'telat' : 'hadir'
         ]);
 
-        $user = Auth::user();
-        $tanggal = Carbon::now()->toDateString();
-        $waktuSekarang = Carbon::now()->toTimeString();
+        return back()->with('success', 'Absen masuk berhasil');
+    }
 
-        // Cari data absen hari ini
-        $absenHariIni = Absensi::where('user_id', $user->id)
-            ->where('tanggal', $tanggal)
+    // Handle absen pulang
+    protected function handleAbsenPulang($karyawan, $request, $now)
+    {
+        $absensi = Absensi::where('karyawan_id', $karyawan->id)
+            ->whereDate('tanggal', $now)
+            ->whereNull('jam_pulang')
             ->first();
 
-        if (!$absenHariIni) {
-            return back()->with('error', 'Anda belum melakukan absen masuk hari ini.');
+        if (!$absensi) {
+            return back()->with('error', $absensi === null ? 'Belum absen masuk hari ini' : 'Sudah absen pulang hari ini');
         }
 
-        if ($absenHariIni->jam_pulang) {
-            return back()->with('info', 'Anda sudah melakukan absen pulang hari ini.');
-        }
-
-        // Update absen pulang
-        $absenHariIni->update([
-            'jam_pulang' => $waktuSekarang,
+        $absensi->update([
+            'jam_pulang' => $now,
             'latitude_pulang' => $request->latitude,
-            'longitude_pulang' => $request->longitude,
+            'longitude_pulang' => $request->longitude
         ]);
 
-        return back()->with('success', 'Absen pulang berhasil.');
+        return back()->with('success', 'Absen pulang berhasil');
+    }
+
+    // Routes untuk absensi
+    public function absenMasuk(Request $request)
+    {
+        return $this->handleAbsensi($request, 'masuk');
+    }
+
+    public function absenPulang(Request $request)
+    {
+        return $this->handleAbsensi($request, 'pulang');
     }
 }
