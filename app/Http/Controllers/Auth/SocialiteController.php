@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Karyawan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
@@ -61,10 +62,24 @@ class SocialiteController extends Controller
                         'email_verified_at' => now(),
                     ]);
 
+                    $latestNik = Karyawan::whereYear('created_at', now()->year)
+                        ->whereMonth('created_at', now()->month)
+                        ->orderBy('nik', 'desc')
+                        ->value('nik');
+
+                    if ($latestNik) {
+                        $sequence = (int)substr($latestNik, -5);
+                        $newSequence = str_pad($sequence + 1, 5, '0', STR_PAD_LEFT);
+                    } else {
+                        $newSequence = '00001';
+                    }
+
+                    $nik = 'G' . now()->format('ym') . $newSequence;
+
                     // Create associated Karyawan record
-                    $karyawan = \App\Models\Karyawan::create([
+                    $karyawan = Karyawan::create([
                         'user_id' => $user->id,
-                        'nik' => 'K' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
+                        'nik' => $nik,
                         'departemen_id' => 1,
                         'jabatan' => 'Staff'
                     ]);

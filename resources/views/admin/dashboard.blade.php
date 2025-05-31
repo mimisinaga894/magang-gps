@@ -249,7 +249,9 @@
             @endif
 
             <div class="mb-4">
-                <a href="{{ route('register') }}" class="btn btn-primary">Tambah Pengguna</a>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                    <i class="bi bi-person-plus"></i> Tambah Pengguna
+                </button>
             </div>
 
             <table class="table table-bordered">
@@ -322,9 +324,106 @@
             &copy; 2025 by Mimi Sinaga - Programmer
         </footer>
 
+        <div class="modal fade" id="registerModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Tambah Pengguna Baru</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @include('components.user-form', [
+                            'isModal' => true,
+                            'isAdmin' => true,
+                            'formId' => 'modalRegisterForm',
+                            'submitText' => 'Simpan',
+                            'departemens' => $departemens,
+                        ])
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const roleSelect = document.getElementById('role');
+                const karyawanFields = document.getElementById('karyawanFields');
+
+                function toggleKaryawanFields(role) {
+                    if (karyawanFields && roleSelect) {
+                        if (role === 'admin') {
+                            karyawanFields.style.display = 'none';
+                            // Disable karyawan fields jika role adalah admin
+                            karyawanFields.querySelectorAll('input, select').forEach(input => {
+                                input.disabled = true;
+                                input.value = '';
+                            });
+                        } else {
+                            karyawanFields.style.display = 'block';
+                            // Enable karyawan fields jika role adalah karyawan
+                            karyawanFields.querySelectorAll('input, select').forEach(input => {
+                                input.disabled = false;
+                            });
+                        }
+                    }
+                }
+
+                roleSelect?.addEventListener('change', function() {
+                    toggleKaryawanFields(this.value);
+                });
+
+                // Inisialisasi saat halaman dimuat
+                if (roleSelect) {
+                    toggleKaryawanFields(roleSelect.value);
+                }
+
+                const modalForm = document.getElementById('modalRegisterForm');
+                modalForm?.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    try {
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            body: new FormData(this),
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            showErrors(data.errors);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+
+                function showErrors(errors) {
+                    // Clear previous errors
+                    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                    document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+                    // Show new errors
+                    Object.keys(errors).forEach(key => {
+                        const input = document.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            const feedback = document.createElement('div');
+                            feedback.className = 'invalid-feedback';
+                            feedback.textContent = errors[key][0];
+                            input.parentNode.appendChild(feedback);
+                        }
+                    });
+                }
+            });
+        </script>
 </body>
 
 </html>

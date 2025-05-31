@@ -164,113 +164,11 @@
                 <hr>
             </div>
 
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
-
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                        name="name" placeholder="Nama Lengkap" value="{{ old('name') }}">
-                    <label for="name">Nama Lengkap</label>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control @error('username') is-invalid @enderror" id="username"
-                        name="username" placeholder="Username" value="{{ old('username') }}">
-                    <label for="username">Username</label>
-                    @error('username')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
-                        name="email" placeholder="Email" value="{{ old('email') }}">
-                    <label for="email">Email</label>
-                    @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
-                        <option value="" disabled selected>Pilih Jenis Kelamin</option>
-                        <option value="L" {{ old('gender') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                        <option value="P" {{ old('gender') == 'P' ? 'selected' : '' }}>Perempuan</option>
-                    </select>
-                    <label for="gender">Jenis Kelamin</label>
-                    @error('gender')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone"
-                        name="phone" placeholder="Nomor Telepon" value="{{ old('phone') }}">
-                    <label for="phone">Nomor Telepon</label>
-                    @error('phone')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" placeholder="Alamat"
-                        style="height: 100px">{{ old('address') }}</textarea>
-                    <label for="address">Alamat</label>
-                    @error('address')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <select class="form-select @error('departemen_id') is-invalid @enderror" id="departemen_id"
-                        name="departemen_id">
-                        <option value="" disabled selected>Pilih Departemen</option>
-                        @foreach ($departemens as $departemen)
-                            <option value="{{ $departemen->id }}"
-                                {{ old('departemen_id') == $departemen->id ? 'selected' : '' }}>
-                                {{ $departemen->nama }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <label for="departemen_id">Departemen</label>
-                    @error('departemen_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control @error('jabatan') is-invalid @enderror" id="jabatan"
-                        name="jabatan" placeholder="Jabatan" value="{{ old('jabatan') }}">
-                    <label for="jabatan">Jabatan</label>
-                    @error('jabatan')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
-                        name="password" placeholder="Password">
-                    <label for="password">Password</label>
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="password" class="form-control" id="password_confirmation"
-                        name="password_confirmation" placeholder="Konfirmasi Password">
-                    <label for="password_confirmation">Konfirmasi Password</label>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100">Daftar</button>
-
-                <div class="text-center mt-2">
-                    Sudah punya akun? <a href="{{ route('login') }}" class="text-decoration-none">Masuk</a>
-                </div>
-            </form>
+            @include('components.user-form', [
+                'isModal' => false,
+                'isAdmin' => false,
+                'departemens' => $departemens,
+            ])
         </div>
 
         <!-- INFO SIDE -->

@@ -23,36 +23,56 @@ class AuthController extends Controller
     {
         try {
             // Validasi input
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'username' => 'required|string|unique:users,username',
+            $rules = [
+                'name' => 'required|max:255',
+                'username' => 'required|unique:users,username',
                 'email' => 'required|email|unique:users,email',
-                'gender' => 'required|in:L,P',
-                'phone' => 'nullable|string|max:15',
-                'address' => 'nullable|string',
-                'departemen_id' => 'required|exists:departemen,id',
-                'jabatan' => 'required|string|max:50',
-                'password' => 'required|min:6|confirmed'
-            ], [
+                'gender' => 'nullable|in:L,P',
+                'phone' => 'nullable|max:15',
+                'address' => 'nullable',
+                'role' => 'required|in:admin,karyawan',
+                'password' => 'required|min:6'
+            ];
+
+            if (!$request->has('admin')) {
+                $rules['password'] .= '|confirmed';
+                $rules['password_confirmation'] = 'required';
+            }
+
+            if ($request->input('role') === 'karyawan') {
+                $rules = array_merge($rules, [
+                    'nik' => 'required|unique:karyawan|min:16|max:16',
+                    'departemen_id' => 'required|exists:departemen,id',
+                    'jabatan' => 'required|max:50'
+                ]);
+            }
+
+            $messages = [
                 'name.required' => 'Nama lengkap wajib diisi',
                 'username.required' => 'Username wajib diisi',
                 'username.unique' => 'Username sudah digunakan',
                 'email.required' => 'Email wajib diisi',
                 'email.email' => 'Format email tidak valid',
                 'email.unique' => 'Email sudah digunakan',
-                'gender.required' => 'Jenis kelamin wajib dipilih',
-                'departemen_id.required' => 'Departemen wajib dipilih',
-                'departemen_id.exists' => 'Departemen tidak valid',
-                'jabatan.required' => 'Jabatan wajib diisi',
                 'password.required' => 'Password wajib diisi',
                 'password.min' => 'Password minimal 6 karakter',
-                'password.confirmed' => 'Konfirmasi password tidak cocok'
-            ]);
+                'password.confirmed' => 'Konfirmasi password tidak cocok',
+                'password_confirmation.required' => 'Konfirmasi password wajib diisi',
+                'role.required' => 'Role wajib dipilih',
+                'nik.required' => 'NIK wajib diisi',
+                'nik.unique' => 'NIK sudah digunakan',
+                'nik.min' => 'NIK harus 16 karakter',
+                'nik.max' => 'NIK harus 16 karakter',
+                'departemen_id.required' => 'Departemen wajib dipilih',
+                'jabatan.required' => 'Jabatan wajib diisi'
+            ];
+
+            $validated = $request->validate($rules, $messages);
 
             DB::beginTransaction();
 
             try {
-                // Create user
+                // Buat pengguna baru
                 $user = User::create([
                     'name' => $validated['name'],
                     'username' => $validated['username'],
@@ -61,38 +81,45 @@ class AuthController extends Controller
                     'phone' => $validated['phone'],
                     'address' => $validated['address'],
                     'password' => Hash::make($validated['password']),
-                    'role' => 'karyawan',
+                    'role' => $validated['role']
                 ]);
 
-                // Create karyawan
-                Karyawan::create([
-                    'user_id' => $user->id,
-                    'nik' => 'K' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
-                    'departemen_id' => $validated['departemen_id'],
-                    'nama_lengkap' => $validated['name'],
-                    'jabatan' => $validated['jabatan']
-                ]);
+                // Jika role adalah karyawan, buat data karyawan
+                if ($validated['role'] === 'karyawan') {
+                    Karyawan::create([
+                        'user_id' => $user->id,
+                        'nik' => $validated['nik'],
+                        'departemen_id' => $validated['departemen_id'],
+                        'nama_lengkap' => $validated['name'],
+                        'jabatan' => $validated['jabatan']
+                    ]);
+                }
 
                 DB::commit();
-                Auth::login($user);
 
+                if ($request->ajax()) {
+                    return response()->json(['success' => true]);
+                }
+
+                // Jika ada parameter admin, redirect ke dashboard admin
+                if ($request->has('admin')) {
+                    return redirect()->route('admin.dashboard')
+                        ->with('success', 'Pengguna berhasil ditambahkan');
+                }
+
+                // Jika tidak, login pengguna dan redirect ke dashboard sesuai role
+                Auth::login($user);
                 return redirect()->route($user->role . '.dashboard')
-                    ->with('success', 'Registrasi berhasil! Selamat datang.');
+                    ->with('success', 'Registrasi berhasil!');
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Registration Error:', [
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-
-                return back()
-                    ->withInput()
-                    ->withErrors(['error' => 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.']);
+                throw $e;
             }
         } catch (ValidationException $e) {
-            return back()
-                ->withInput()
-                ->withErrors($e->errors());
+            if ($request->ajax()) {
+                return response()->json(['errors' => $e->errors()], 422);
+            }
+            return back()->withInput()->withErrors($e->errors());
         }
     }
 
