@@ -12,6 +12,7 @@ use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\LokasiKantorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CutiController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -107,5 +108,10 @@ Route::middleware('auth')->group(function () {
         // Laporan
         Route::get('/export-excel', [KaryawanController::class, 'exportExcel'])->name('karyawan.laporan.excel');
         Route::get('/export-pdf', [KaryawanController::class, 'exportPdf'])->name('karyawan.laporan.pdf');
+    });
+
+    // Cuti
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/cuti/submit', [CutiController::class, 'store'])->name('cuti.submit');
     });
 });

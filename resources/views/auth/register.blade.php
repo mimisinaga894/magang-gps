@@ -165,9 +165,9 @@
             </div>
 
             @include('components.user-form', [
-                'isModal' => false,
-                'isAdmin' => false,
-                'departemens' => $departemens,
+            'isModal' => false,
+            'isAdmin' => false,
+            'departemens' => $departemens,
             ])
         </div>
 

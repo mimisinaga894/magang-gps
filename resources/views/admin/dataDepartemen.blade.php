@@ -4,6 +4,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>kode</th>
                 <th>Nama Departemen</th>
             </tr>
         </thead>
@@ -11,7 +12,8 @@
             @foreach ($departemen as $item)
             <tr>
                 <td>{{ $item->id }}</td>
-                <td>{{ $item->nama_departemen }}</td>
+                <td>{{ $item->kode}}</td>
+                <td>{{ $item->nama}}</td>
             </tr>
             @endforeach
         </tbody>

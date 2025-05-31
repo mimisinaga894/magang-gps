@@ -10,41 +10,24 @@ class DepartemenSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
-        $departemens = [
+public function run(): void
+{
+    $departemens = [
+        ['kode' => 'HRD', 'nama' => 'Human Resource Development'],
+        ['kode' => 'FIN', 'nama' => 'Finance'],
+        ['kode' => 'IT',  'nama' => 'Information Technology'],
+        ['kode' => 'MKT', 'nama' => 'Marketing'],
+        ['kode' => 'OPR', 'nama' => 'Operations'],
+    ];
+
+    foreach ($departemens as $departemen) {
+        \DB::table('departemen')->updateOrInsert(
+            ['kode' => $departemen['kode']], 
             [
-                'kode' => 'HRD',
-                'nama' => 'Human Resource Development',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode' => 'FIN',
-                'nama' => 'Finance',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode' => 'IT',
-                'nama' => 'Information Technology',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode' => 'MKT',
-                'nama' => 'Marketing',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'kode' => 'OPR',
-                'nama' => 'Operations',
+                'nama' => $departemen['nama'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
-        ];
-
-        DB::table('departemen')->insert($departemens);
+        );
     }
 }
