@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cuti;
 use Illuminate\Http\Request;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+
 
 class CutiController extends Controller
 {

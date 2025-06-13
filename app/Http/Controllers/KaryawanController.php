@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class KaryawanController extends Controller
 {
-    // Dashboard karyawan (contoh)
+    
     public function showDashboard()
     {
         $user = Auth::user();
@@ -24,7 +24,7 @@ class KaryawanController extends Controller
         return view('karyawan.dashboard', compact('absensi'));
     }
 
-    // Halaman absen masuk
+
     protected function handleAbsensi(Request $request, string $type)
     {
         try {
@@ -58,7 +58,7 @@ class KaryawanController extends Controller
         }
     }
 
-    // Handle absen masuk
+ 
     protected function handleAbsenMasuk($karyawan, $request, $now)
     {
         $exists = Absensi::where('karyawan_id', $karyawan->id)
@@ -81,7 +81,7 @@ class KaryawanController extends Controller
         return back()->with('success', 'Absen masuk berhasil');
     }
 
-    // Handle absen pulang
+   
     protected function handleAbsenPulang($karyawan, $request, $now)
     {
         $absensi = Absensi::where('karyawan_id', $karyawan->id)

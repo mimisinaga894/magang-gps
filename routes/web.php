@@ -14,6 +14,7 @@ use App\Http\Controllers\LokasiKantorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CutiController;
 
+
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route(Auth::user()->role . '.dashboard');
@@ -35,6 +36,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register.form');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 
+
 // Route lupa password
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
@@ -52,10 +54,11 @@ Route::get('/login/google/callback', [SocialiteController::class, 'callback'])->
 Route::middleware('auth')->group(function () {
 
     // Profile
-    Route::get('/pengaturan-akun', [ProfileController::class, 'edit'])->name('admin.pengaturan-akun');
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::middleware('auth')->group(function () {
+        Route::get('/admin/pengaturan-akun', [ProfileController::class, 'edit'])->name('admin.pengaturan-akun');
+        Route::patch('/admin/pengaturan-akun', [ProfileController::class, 'update'])->name('profile.update');
+    });
+
 
     // dashboard
     Route::get('/dashboard', function () {
@@ -73,6 +76,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit-user/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
         Route::put('/update-user/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
         Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
+        Route::get('/admin/user/create', [AdminController::class, 'createUser'])->name('admin.user.create');
+        Route::post('/admin/user/store', [AdminController::class, 'storeUser'])->name('admin.user.store');
+
 
         // Departemen
         Route::get('/departemen', [AdminController::class, 'departemen'])->name('admin.departemen');

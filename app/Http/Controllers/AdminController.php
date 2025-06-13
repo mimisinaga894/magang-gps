@@ -9,6 +9,7 @@ use App\Models\Departemen;
 use App\Models\Absensi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -103,8 +104,6 @@ class AdminController extends Controller
                 'address' => 'nullable',
                 'role' => 'required|in:admin,karyawan'
             ];
-
-            // Tammbahkan aturan jika role diubah menjadi karyawan
             if ($request->input('role') === 'karyawan') {
                 $rules = array_merge($rules, [
                     'nik' => 'required|unique:karyawan,nik,' . ($user->karyawan->id ?? ''),
@@ -138,8 +137,6 @@ class AdminController extends Controller
                 $validated = $request->validate($rules, $messages);
 
                 DB::beginTransaction();
-
-                // Update user data
                 $user->update([
                     'name' => $validated['name'],
                     'username' => $validated['username'],
@@ -149,10 +146,7 @@ class AdminController extends Controller
                     'address' => $validated['address'],
                     'role' => $validated['role']
                 ]);
-
-                // Jika role adalah karyawan, pastikan NIK, departemen, dan jabatan diisi
                 if ($validated['role'] === 'karyawan') {
-                    // Buat atau update data karyawan
                     if ($user->karyawan) {
                         $user->karyawan->update([
                             'nik' => $validated['nik'],
@@ -161,7 +155,6 @@ class AdminController extends Controller
                             'jabatan' => $validated['jabatan']
                         ]);
                     } else {
-                        // Tambah data karyawan
                         Karyawan::create([
                             'user_id' => $user->id,
                             'nik' => $validated['nik'],
@@ -171,7 +164,6 @@ class AdminController extends Controller
                         ]);
                     }
                 } else {
-                    // Jika role diubah dari karyawan ke admin, hapus data karyawan
                     if ($user->karyawan) {
                         $user->karyawan->delete();
                     }
@@ -226,6 +218,66 @@ class AdminController extends Controller
             return redirect()
                 ->route('admin.dashboard')
                 ->with('error', 'Gagal menghapus pengguna');
+        }
+    }
+
+    public function createUser()
+    {
+        $departemens = Departemen::all();
+        return view('admin.create-user', compact('departemens'));
+    }
+
+    public function storeUser(Request $request)
+    {
+        $rules = [
+            'name' => 'required|max:255',
+            'username' => 'required|unique:users,username',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+            'role' => 'required|in:admin,karyawan',
+            'gender' => 'nullable|in:L,P',
+            'phone' => 'nullable|max:15',
+            'address' => 'nullable'
+        ];
+
+        if ($request->role === 'karyawan') {
+            $rules = array_merge($rules, [
+                'nik' => 'required|unique:karyawan,nik',
+                'departemen_id' => 'required|exists:departemen,id',
+                'jabatan' => 'required|max:50'
+            ]);
+        }
+
+        $validated = $request->validate($rules);
+
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'password' => bcrypt($validated['password']),
+                'gender' => $validated['gender'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'role' => $validated['role']
+            ]);
+
+            if ($user->role === 'karyawan') {
+                Karyawan::create([
+                    'user_id' => $user->id,
+                    'nik' => $validated['nik'],
+                    'departemen_id' => $validated['departemen_id'],
+                    'nama_lengkap' => $validated['name'],
+                    'jabatan' => $validated['jabatan']
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('admin.dashboard')->with('success', 'Pengguna berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menambahkan pengguna.')->withInput();
         }
     }
 }

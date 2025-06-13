@@ -12,10 +12,16 @@ class Departemen extends Model
 
     protected $table = 'departemen';
 
+
     protected $fillable = [
         'kode',
         'nama'
     ];
+    public function showRegistrationForm()
+    {
+        $departemens = Departemen::all();
+        return view('auth.register', compact('departemens'));
+    }
 
     public function karyawan(): HasMany
     {

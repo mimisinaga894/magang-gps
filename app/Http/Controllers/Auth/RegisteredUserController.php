@@ -22,24 +22,39 @@ class RegisteredUserController extends Controller
     }
 
 
-    public function store(Request $request): RedirectResponse
+    public function register(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
+            'gender' => 'required|in:L,P',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string',
+            'role' => 'required|in:admin,karyawan',
+            'nik' => 'nullable|string|max:50',
+            'departemen_id' => 'nullable|exists:departemens,id',
+            'jabatan' => 'nullable|string|max:100',
+            'password' => 'required|string|min:8|confirmed',
         ]);
+
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'gender' => $validated['gender'],
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'role' => $validated['role'],
+            'nik' => $validated['nik'] ?? null,
+            'departemen_id' => $validated['departemen_id'] ?? null,
+            'jabatan' => $validated['jabatan'] ?? null,
+            'password' => Hash::make($validated['password']),
         ]);
 
-        event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }

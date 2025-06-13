@@ -171,7 +171,6 @@
             ])
         </div>
 
-        <!-- INFO SIDE -->
         <div class="info-side">
             <img src="{{ asset('img/logo.png') }}" alt="Ilustrasi" class="info-img mb-4" />
             <h5 class="fw-semibold">Daftarkan akun Anda</h5>

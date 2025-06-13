@@ -216,6 +216,7 @@
                         <i class="bi bi-gear-fill"></i> Pengaturan Akun
                     </a>
                 </li>
+                </li>
                 <li class="nav-item mt-3">
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
@@ -243,9 +244,9 @@
             <h1 class="mb-4">Dashboard Admin</h1>
 
             @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
             @endif
 
             <div class="mb-4">
@@ -268,24 +269,24 @@
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
-                        <tr>
-                            <td>{{ $user->id }}</td>
-                            <td>{{ $user->name }}</td>
-                            <td>{{ $user->email }}</td>
-                            <td>{{ $user->phone }}</td>
-                            <td>{{ $user->address }}</td>
-                            <td>{{ $user->role }}</td>
-                            <td>
-                                <a href="{{ route('admin.editUser', $user->id) }}"
-                                    class="btn btn-warning btn-sm">Edit</a>
-                                <form action="{{ route('admin.deleteUser', $user->id) }}" method="POST"
-                                    class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                </form>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ $user->id }}</td>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->phone }}</td>
+                        <td>{{ $user->address }}</td>
+                        <td>{{ $user->role }}</td>
+                        <td>
+                            <a href="{{ route('admin.editUser', $user->id) }}"
+                                class="btn btn-warning btn-sm">Edit</a>
+                            <form action="{{ route('admin.deleteUser', $user->id) }}" method="POST"
+                                class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -305,14 +306,14 @@
                 </thead>
                 <tbody>
                     @foreach ($departemenData as $index => $dept)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $dept->nama_departemen }}</td>
-                            <td>{{ $dept->jumlah_karyawan }}</td>
-                            <td>{{ $dept->jumlah_hadir }}</td>
-                            <td>{{ $dept->jumlah_sakit }}</td>
-                            <td>{{ $dept->jumlah_izin }}</td>
-                        </tr>
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $dept->nama_departemen }}</td>
+                        <td>{{ $dept->jumlah_karyawan }}</td>
+                        <td>{{ $dept->jumlah_hadir }}</td>
+                        <td>{{ $dept->jumlah_sakit }}</td>
+                        <td>{{ $dept->jumlah_izin }}</td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -333,11 +334,11 @@
                     </div>
                     <div class="modal-body">
                         @include('components.user-form', [
-                            'isModal' => true,
-                            'isAdmin' => true,
-                            'formId' => 'modalRegisterForm',
-                            'submitText' => 'Simpan',
-                            'departemens' => $departemens,
+                        'isModal' => true,
+                        'isAdmin' => true,
+                        'formId' => 'modalRegisterForm',
+                        'submitText' => 'Simpan',
+                        'departemens' => $departemens,
                         ])
                     </div>
                 </div>
@@ -357,14 +358,12 @@
                     if (karyawanFields && roleSelect) {
                         if (role === 'admin') {
                             karyawanFields.style.display = 'none';
-                            // Disable karyawan fields jika role adalah admin
                             karyawanFields.querySelectorAll('input, select').forEach(input => {
                                 input.disabled = true;
                                 input.value = '';
                             });
                         } else {
                             karyawanFields.style.display = 'block';
-                            // Enable karyawan fields jika role adalah karyawan
                             karyawanFields.querySelectorAll('input, select').forEach(input => {
                                 input.disabled = false;
                             });
@@ -376,7 +375,7 @@
                     toggleKaryawanFields(this.value);
                 });
 
-                // Inisialisasi saat halaman dimuat
+                
                 if (roleSelect) {
                     toggleKaryawanFields(roleSelect.value);
                 }
@@ -406,11 +405,11 @@
                 });
 
                 function showErrors(errors) {
-                    // Clear previous errors
+
                     document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
                     document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
 
-                    // Show new errors
+
                     Object.keys(errors).forEach(key => {
                         const input = document.querySelector(`[name="${key}"]`);
                         if (input) {
