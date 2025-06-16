@@ -2,7 +2,7 @@
 <html lang="id">
 
 <head>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
@@ -220,6 +220,11 @@
         <div>
             <a href="#" class="nav-link active">Dashboard</a>
             <a href="{{ route('profile.edit') }}" class="nav-link"><i class="bi bi-gear-fill"></i> Profile</a>
+            <li class="nav-item">
+                <a href="{{ route('karyawan.lokasi-kantor') }}" class="nav-link">
+                    <i class="bi bi-geo-alt-fill"></i> Lokasi Kantor
+                </a>
+            </li>
             <a href="{{ route('profile.edit') }}" class="nav-link"><i class="bi bi-gear-fill"></i> Pengaturan Akun</a>
             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                 @csrf

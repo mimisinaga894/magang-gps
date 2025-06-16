@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pengaturan Akun</title>
+    <title>Lokasi Kantor</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
@@ -91,6 +91,8 @@
         .content-wrapper {
             margin-top: 80px;
             max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .form-control {
@@ -104,6 +106,25 @@
 
         .btn-primary:hover {
             background-color: #1f2a3e;
+        }
+
+        .btn-outline-primary {
+            border-radius: 30px;
+            padding: 8px 20px;
+        }
+
+        .card-title i {
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .card {
+            background: #ffffff;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         }
 
         footer.watermark-footer {
@@ -128,6 +149,7 @@
                 <img src="{{ asset('img/loho.png') }}" alt="Logo Sistem Absensi"
                     style="max-width: 150px; height: auto;">
             </div>
+
             <ul class="nav flex-column px-2">
                 <li class="nav-item">
                     <a href="{{ route('admin.dashboard') }}" class="nav-link">
@@ -136,7 +158,8 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#masterDataMenu" role="button" aria-expanded="false" aria-controls="masterDataMenu">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#masterDataMenu" role="button"
+                        aria-expanded="false" aria-controls="masterDataMenu">
                         <i class="bi bi-archive-fill"></i> Master Data
                         <i class="bi bi-caret-down-fill float-end"></i>
                     </a>
@@ -160,7 +183,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.lokasi-kantor') }}" class="nav-link">
+                    <a href="{{ route('admin.lokasi-kantor') }}" class="nav-link active">
                         <i class="bi bi-geo-alt-fill"></i> Lokasi Kantor
                     </a>
                 </li>
@@ -169,10 +192,8 @@
                         <i class="bi bi-gear-fill"></i> Pengaturan Akun
                     </a>
                 </li>
-                </li>
                 <li class="nav-item mt-3">
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                        @csrf
                         <button type="submit" class="btn btn-link nav-link text-white"
                             style="width: 100%; text-align: left;">
                             <i class="bi bi-box-arrow-right"></i> Log Out
@@ -187,58 +208,56 @@
         </div>
     </div>
 
-    <div class="top-navbar">
-        <span class="welcome-text">👋 Selamat datang, {{ Auth::user()->name }}</span>
-        <a href="{{ route('admin.pengaturan-akun') }}" class="btn btn-outline-light btn-sm me-2">
-            <i class="bi bi-person-circle"></i> Edit Profile
-        </a>
-        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </button>
-        </form>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <div class="main-content">
+        <nav class="top-navbar">
+            <div class="welcome-text">Selamat Datang, Administrator</div>
+            <i class="bi bi-person-circle" style="font-size: 1.5rem;"></i>
+        </nav>
+
+        <div class="content-wrapper">
+            <div class="container mt-5">
+                <div class="card shadow-lg rounded-4 border-0">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="card-title text-center mb-4 fw-bold text-primary">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> Lokasi Kantor Kami
+                        </h3>
+                        <br>
+
+                        <div class="mb-5 text-center">
+                            <h5 class="fw-semibold"><i class="bi bi-building text-primary"></i> Alamat</h5>
+                            <p class="mb-0">Jl. Merdeka No. 123</p>
+                            <p class="mb-0">Kecamatan Menteng, Jakarta Pusat</p>
+                            <p>DKI Jakarta, Indonesia</p>
+                        </div>
+
+                        <div class="mb-5 text-center">
+                            <h5 class="fw-semibold"><i class="bi bi-map-fill text-success"></i> Lihat di Peta</h5>
+                            <div class="rounded overflow-hidden shadow-sm" style="border: 2px solid #ccc;">
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d991.5974963410468!2d106.82715339999999!3d-6.208763!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3e8f4f63b37%3A0x499c0a36427fd1d7!2sMonas%2C%20Jakarta!5e0!3m2!1sid!2sid!4v1718280912345"
+                                    width="100%" height="300" style="border:0;" allowfullscreen loading="lazy">
+                                </iframe>
+                            </div>
+                        </div>
+
+                        <p class="text-center text-muted mb-5" style="font-size: 1.1rem;">
+                            Berikut adalah informasi alamat lengkap kantor dan lokasi kami di peta.
+                        </p>
+
+                        <div class="text-end">
+                            <a href="{{ url()->previous() }}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left-circle"></i> Kembali
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <main class="main-content">
-        <div class="content-wrapper bg-white shadow rounded p-4">
-            <h3 class="mb-3">🔧 Pengaturan Akun</h3>
-            <p class="text-muted">Perbarui informasi akun Anda dengan aman di sini.</p>
-
-            <form method="POST" action="{{ route('profile.update') }}">
-                @csrf
-                @method('PATCH')
-
-                <div class="mb-3">
-                    <label for="name" class="form-label">Nama Lengkap</label>
-                    <input id="name" name="name" type="text" class="form-control" value="{{ old('name', Auth::user()->name) }}" required />
-                </div>
-
-                <div class="mb-3">
-                    <label for="email" class="form-label">Alamat Email</label>
-                    <input id="email" name="email" type="email" class="form-control" value="{{ old('email', Auth::user()->email) }}" required />
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password Baru <small class="text-muted">(Biarkan kosong jika tidak diubah)</small></label>
-                    <input id="password" name="password" type="password" class="form-control" autocomplete="new-password" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password" />
-                </div>
-
-                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Simpan Perubahan</button>
-            </form>
-        </div>
-    </main>
-
-    <footer class="watermark-footer">
-        Sistem Absensi - &copy; 2025
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

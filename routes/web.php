@@ -1,18 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\KaryawanController as KaryawanDashboardController;
+use App\Http\Controllers\Admin\KaryawanController as AdminKaryawanController;
+use App\Http\Controllers\LokasiKantorController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\Auth\SocialiteController;
-use App\Http\Controllers\LokasiKantorController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CutiController;
+
 
 
 Route::get('/', function () {
@@ -59,7 +61,6 @@ Route::middleware('auth')->group(function () {
         Route::patch('/admin/pengaturan-akun', [ProfileController::class, 'update'])->name('profile.update');
     });
 
-
     // dashboard
     Route::get('/dashboard', function () {
         return redirect()->route(Auth::user()->role . '.dashboard');
@@ -81,12 +82,18 @@ Route::middleware('auth')->group(function () {
 
 
         // Departemen
-        Route::get('/departemen', [AdminController::class, 'departemen'])->name('admin.departemen');
+        Route::get('/departemen', [DepartemenController::class, 'index'])->name('admin.departemen');
         Route::get('/admin/data-departemen', [AdminController::class, 'dataDepartemen'])->name('admin.dataDepartemen');
         Route::post('/departemen/tambah', [DepartemenController::class, 'store'])->name('admin.departemen.store');
         Route::get('/departemen/perbarui', [DepartemenController::class, 'edit'])->name('admin.departemen.edit');
         Route::post('/departemen/perbarui', [DepartemenController::class, 'update'])->name('admin.departemen.update');
         Route::post('/departemen/hapus', [DepartemenController::class, 'delete'])->name('admin.departemen.delete');
+
+
+        //karyawan
+        Route::get('/karyawan', [AdminKaryawanController::class, 'index'])->name('admin.karyawan.index');
+
+
 
         // Presensi
         Route::get('/monitoring-presensi', [PresensiController::class, 'monitoringPresensi'])->name('admin.monitoring-presensi');
@@ -98,26 +105,24 @@ Route::middleware('auth')->group(function () {
         Route::post('/laporan/presensi/semua-karyawan', [PresensiController::class, 'laporanPresensiSemuaKaryawan'])->name('admin.laporan.presensi.semua-karyawan');
 
         // Lokasi Kantor
-        Route::get('/lokasi', [LokasiKantorController::class, 'index'])->name('admin.lokasi-kantor');
-        Route::post('/lokasi/tambah', [LokasiKantorController::class, 'store'])->name('admin.lokasi-kantor.store');
-        Route::get('/lokasi/perbarui', [LokasiKantorController::class, 'edit'])->name('admin.lokasi-kantor.edit');
-        Route::post('/lokasi/perbarui', [LokasiKantorController::class, 'update'])->name('admin.lokasi-kantor.update');
-        Route::post('/lokasi/hapus', [LokasiKantorController::class, 'delete'])->name('admin.lokasi-kantor.delete');
-    });
+        Route::get('/admin/lokasi-kantor', [AdminController::class, 'lokasiKantor'])->name('admin.lokasi-kantor');
 
-    // ==================== KARYAWAN ==================== //
-    Route::prefix('karyawan')->group(function () {
-        Route::get('/dashboard', [KaryawanController::class, 'showDashboard'])->name('karyawan.dashboard');
-        Route::post('/absen-masuk', [KaryawanController::class, 'absenMasuk'])->name('absen.masuk');
-        Route::post('/absen-pulang', [KaryawanController::class, 'absenPulang'])->name('absen.pulang');
 
-        // Laporan
-        Route::get('/export-excel', [KaryawanController::class, 'exportExcel'])->name('karyawan.laporan.excel');
-        Route::get('/export-pdf', [KaryawanController::class, 'exportPdf'])->name('karyawan.laporan.pdf');
-    });
+        // ==================== KARYAWAN ==================== //
 
-    // Cuti
-    Route::middleware(['auth'])->group(function () {
-        Route::post('/cuti/submit', [CutiController::class, 'store'])->name('cuti.submit');
+        Route::prefix('karyawan')->group(function () {
+            Route::get('/dashboard', [KaryawanDashboardController::class, 'showDashboard'])->name('karyawan.dashboard');
+            Route::post('/absen-masuk', [KaryawanDashboardController::class, 'absenMasuk'])->name('absen.masuk');
+            Route::post('/absen-pulang', [KaryawanDashboardController::class, 'absenPulang'])->name('absen.pulang');
+
+            //Laporan    
+            Route::get('/export-excel', [KaryawanDashboardController::class, 'exportExcel'])->name('karyawan.laporan.excel');
+            Route::get('/export-pdf', [KaryawanDashboardController::class, 'exportPdf'])->name('karyawan.laporan.pdf');
+        });
+
+        // Cuti
+        Route::middleware(['auth'])->group(function () {
+            Route::post('/cuti/submit', [CutiController::class, 'store'])->name('cuti.submit');
+        });
     });
 });

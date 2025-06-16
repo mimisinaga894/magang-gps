@@ -198,152 +198,57 @@
             <div>Selamat Datang, Administrator</div>
             <i class="bi bi-person-circle" style="font-size: 1.5rem;"></i>
         </nav>
+        <div class="container mt-5">
+            <h1 class="mb-4">Data Karyawan</h1>
 
-        <div class="content-wrapper">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Data Departemen</h2>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreate">
-                    Tambah Data
-                </button>
-            </div>
+            @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
 
-
-            <form action="{{ route('admin.departemen') }}" method="get" class="mb-3">
-                <div class="input-group">
-                    <input type="text" name="cari_departemen" class="form-control" placeholder="Cari Departemen..." value="{{ request()->cari_departemen }}">
-                    <button class="btn btn-success" type="submit">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-            </form>
-
-
-            <div class="card shadow-sm">
+            <div class="card shadow-sm rounded">
                 <div class="card-body">
                     <table class="table table-bordered table-hover">
-                        <thead class="table-light">
+                        <thead class="table-primary">
                             <tr>
                                 <th>No</th>
-                                <th>Kode</th>
-                                <th>Nama</th>
+                                <th>NIK</th>
+                                <th>Nama Lengkap</th>
+                                <th>Departemen</th>
+                                <th>Jabatan</th>
+                                <th>Email</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($departemen as $i => $item)
+                            @forelse ($karyawans as $index => $karyawan)
                             <tr>
-                                <td>{{ $departemen->firstItem() + $i }}</td>
-                                <td>{{ $item->kode }}</td>
-                                <td>{{ $item->nama }}</td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $karyawan->nik }}</td>
+                                <td>{{ $karyawan->user->name }}</td>
+                                <td>{{ $karyawan->departemen->nama ?? '-' }}</td>
+                                <td>{{ $karyawan->jabatan }}</td>
+                                <td>{{ $karyawan->user->email }}</td>
                                 <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-warning btn-sm btn-icon" onclick="edit_button('{{ $item->id }}')">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm btn-icon" onclick="delete_button('{{ $item->id }}', '{{ $item->nama }}')">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </div>
+                                    <a href="#" class="btn btn-sm btn-warning">Edit</a>
+                                    <form action="#" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
+                                    </form>
                                 </td>
-
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center">Tidak ada data karyawan.</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
-                    {{ $departemen->links() }}
-                </div>
-            </div>
-        </div>
 
-
-        <input type="checkbox" id="create_modal" class="d-none">
-        <div class="modal fade" id="modalCreate" tabindex="-1" aria-labelledby="modalCreateLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form action="{{ route('admin.departemen.store') }}" method="POST">
-                        @csrf
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalCreateLabel">Tambah Departemen</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="text" name="kode" class="form-control mb-2" placeholder="Kode" required>
-                            <input type="text" name="nama" class="form-control" placeholder="Nama" required>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button class="btn btn-success">Simpan</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal" id="editModal">
-            <div class="modal-box">
-                <form action="{{ route('admin.departemen.update') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="id" id="edit_id">
-                    <h5 class="mb-3">Edit Departemen</h5>
-                    <input type="text" name="kode" id="edit_kode" class="form-control" placeholder="Kode" required>
-                    <input type="text" name="nama" id="edit_nama" class="form-control" placeholder="Nama" required>
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-secondary me-2" onclick="closeEditModal()">Tutup</button>
-                        <button class="btn btn-warning text-white">Update</button>
+                    <div class="d-flex justify-content-center">
+                        {{ $karyawans->links() }}
                     </div>
-                </form>
+                </div>
             </div>
         </div>
-
-        <div class="footer">
-            &copy; {{ date('Y') }} Sistem Absensi | Admin Dashboard
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <script>
-        function edit_button(id) {
-            $.get("{{ route('admin.departemen.edit') }}", {
-                id: id
-            }, function(data) {
-                $('#edit_id').val(data.id);
-                $('#edit_kode').val(data.kode);
-                $('#edit_nama').val(data.nama);
-                document.getElementById('editModal').style.display = 'flex';
-            });
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        function delete_button(id, nama) {
-            Swal.fire({
-                title: 'Yakin ingin hapus?',
-                text: `Data ${nama} akan dihapus secara permanen.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.post("{{ route('admin.departemen.delete') }}", {
-                        _token: '{{ csrf_token() }}',
-                        id: id
-                    }, function(response) {
-                        Swal.fire('Terhapus!', response.message, 'success').then(() => location.reload());
-                    });
-                }
-            });
-        }
-    </script>
-</body>
-
-</html>
+        @endsection

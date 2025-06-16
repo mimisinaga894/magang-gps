@@ -46,6 +46,8 @@
             gap: 10px;
         }
 
+
+
         .sidebar .nav-link:hover {
             background-color: #3d4f74;
             border-radius: 4px;
@@ -59,6 +61,19 @@
             user-select: none;
             pointer-events: none;
             font-style: italic;
+        }
+
+        .nav-link {
+            color: #fff;
+            transition: background-color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #495057;
+        }
+
+        .collapse .nav-link {
+            font-size: 14px;
         }
 
         .main-content {
@@ -181,20 +196,20 @@
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
+
                 <li class="nav-item">
-                    <a href="{{ route('admin.dataKaryawan') }}" class="nav-link">
-                        <i class="bi bi-people-fill"></i> Data Karyawan
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.dataDepartemen') }}" class="nav-link">
-                        <i class="bi bi-building"></i> Data Departemen
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.departemen') }}" class="nav-link">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#masterDataMenu" role="button" aria-expanded="false" aria-controls="masterDataMenu">
                         <i class="bi bi-archive-fill"></i> Master Data
+                        <i class="bi bi-caret-down-fill float-end"></i>
                     </a>
+                    <div class="collapse ps-3" id="masterDataMenu">
+                        <a class="nav-link text-white" href="{{ route('admin.departemen') }}">
+                            <i class="bi bi-building"></i> Data Departemen
+                        </a>
+                        <a class="nav-link text-white" href="{{ route('admin.dataKaryawan') }}">
+                            <i class="bi bi-person-badge"></i> Data Karyawan
+                        </a>
+                    </div>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.monitoring-presensi') }}" class="nav-link">
@@ -258,7 +273,7 @@
             <table class="table table-bordered">
                 <thead class="table-primary">
                     <tr>
-                        <th>#</th>
+                        <th>No</th>
                         <th>Nama</th>
                         <th>Email</th>
                         <th>Nomor Telepon</th>
@@ -375,7 +390,7 @@
                     toggleKaryawanFields(this.value);
                 });
 
-                
+
                 if (roleSelect) {
                     toggleKaryawanFields(roleSelect.value);
                 }

@@ -71,6 +71,17 @@ class AdminController extends Controller
         ));
     }
 
+    public function pengaturanAkun()
+    {
+        return view('admin.pengaturan-akun');
+    }
+
+    public function lokasiKantor()
+    {
+        return view('shared.lokasi-kantor');
+    }
+
+
     public function dataKaryawan()
     {
         $karyawan = Karyawan::with(['user', 'departemen'])->get();

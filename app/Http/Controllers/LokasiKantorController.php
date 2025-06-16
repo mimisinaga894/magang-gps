@@ -32,6 +32,11 @@ class LokasiKantorController extends Controller
         return redirect()->route('admin.lokasi-kantor.index')->with('success', 'Lokasi kantor berhasil ditambahkan');
     }
 
+    public function pengaturanAkun()
+    {
+        return view('admin.pengaturan-akun');
+    }
+
     public function update(Request $request, LokasiKantor $lokasiKantor)
     {
         $data = $request->validate([
