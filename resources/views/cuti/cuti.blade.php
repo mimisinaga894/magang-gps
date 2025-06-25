@@ -7,7 +7,6 @@
     <title>Dashboard Karyawan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        /* ... tetap pakai style yang sudah ada ... */
         body {
             overflow-x: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -176,12 +175,10 @@
     <div class="container mt-4">
         <h2>Form Pengajuan Cuti</h2>
 
-        {{-- Notifikasi sukses --}}
         @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        {{-- Menampilkan error validasi --}}
         @if($errors->any())
         <div class="alert alert-danger">
             <strong>Terjadi kesalahan:</strong>
@@ -193,7 +190,7 @@
         </div>
         @endif
 
-        {{-- Form cuti --}}
+     
         <form method="POST" action="{{ route('cuti.store') }}">
             @csrf
 
@@ -225,6 +222,8 @@
             <button type="submit" class="btn btn-primary">Ajukan Cuti</button>
         </form>
     </div>
+    
+
     <!DOCTYPE html>
     <html lang="id">
 

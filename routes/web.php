@@ -94,7 +94,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/karyawan', [AdminKaryawanController::class, 'index'])->name('admin.karyawan.index');
 
 
-
         // Presensi
         Route::get('/monitoring-presensi', [PresensiController::class, 'monitoringPresensi'])->name('admin.monitoring-presensi');
         Route::post('/monitoring-presensi', [PresensiController::class, 'viewLokasi'])->name('admin.monitoring-presensi.lokasi');
