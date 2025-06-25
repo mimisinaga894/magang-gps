@@ -24,6 +24,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+
 // ==================== AUTH & PROFILE ==================== //
 Route::get('/login', function () {
     if (Auth::check()) {
@@ -31,6 +32,7 @@ Route::get('/login', function () {
     }
     return view('auth.login');
 })->name('login');
+
 
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -78,7 +80,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/update-user/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
         Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
         Route::get('/admin/user/create', [AdminController::class, 'createUser'])->name('admin.user.create');
-        Route::post('/admin/user/store', [AdminController::class, 'storeUser'])->name('admin.user.store');
+        Route::post('/admin/user/store', [AdminController::class, 'storeUser'])->name('admin.storeUser');
 
 
         // Departemen
@@ -92,6 +94,8 @@ Route::middleware('auth')->group(function () {
 
         //karyawan
         Route::get('/karyawan', [AdminKaryawanController::class, 'index'])->name('admin.karyawan.index');
+        Route::get('/admin/data-karyawan', [AdminController::class, 'dataKaryawan'])->name('admin.dataKaryawan');
+        Route::resource('karyawan', AdminKaryawanController::class);
 
 
         // Presensi

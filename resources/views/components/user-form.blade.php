@@ -2,7 +2,7 @@
     class="{{ $isModal ? 'modal-form' : '' }}">
     @csrf
     @if ($isAdmin ?? false)
-        <input type="hidden" name="admin" value="true">
+    <input type="hidden" name="admin" value="true">
     @endif
 
     <div class="form-floating mb-3">
@@ -10,7 +10,7 @@
             placeholder="Nama Lengkap" value="{{ old('name') }}">
         <label for="name">Nama Lengkap</label>
         @error('name')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
@@ -19,7 +19,7 @@
             name="username" placeholder="Username" value="{{ old('username') }}">
         <label for="username">Username</label>
         @error('username')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
@@ -28,7 +28,7 @@
             placeholder="Email" value="{{ old('email') }}">
         <label for="email">Email</label>
         @error('email')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
@@ -40,7 +40,7 @@
         </select>
         <label for="gender">Jenis Kelamin</label>
         @error('gender')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
@@ -49,7 +49,7 @@
             placeholder="Nomor Telepon" value="{{ old('phone') }}">
         <label for="phone">Nomor Telepon</label>
         @error('phone')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
@@ -58,24 +58,24 @@
             style="height: 100px">{{ old('address') }}</textarea>
         <label for="address">Alamat</label>
         @error('address')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
     @if ($isAdmin ?? false)
-        <div class="form-floating mb-3">
-            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role">
-                <option value="" disabled {{ !old('role') ? 'selected' : '' }}>Pilih Role</option>
-                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
-            </select>
-            <label for="role">Role</label>
-            @error('role')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+    <div class="form-floating mb-3">
+        <select class="form-select @error('role') is-invalid @enderror" id="role" name="role">
+            <option value="" disabled {{ !old('role') ? 'selected' : '' }}>Pilih Role</option>
+            <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+            <option value="karyawan" {{ old('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
+        </select>
+        <label for="role">Role</label>
+        @error('role')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
     @else
-        <input type="hidden" name="role" value="karyawan">
+    <input type="hidden" name="role" value="karyawan">
     @endif
 
     <div id="karyawanFields" class="{{ $isAdmin && old('role') === 'admin' ? 'd-none' : '' }}">
@@ -84,7 +84,7 @@
                 placeholder="NIK" value="{{ old('nik') }}">
             <label for="nik">NIK</label>
             @error('nik')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
 
@@ -95,15 +95,15 @@
                     Pilih Departemen
                 </option>
                 @foreach ($departemens as $departemen)
-                    <option value="{{ $departemen->id }}"
-                        {{ old('departemen_id') == $departemen->id ? 'selected' : '' }}>
-                        {{ $departemen->nama }}
-                    </option>
+                <option value="{{ $departemen->id }}"
+                    {{ old('departemen_id') == $departemen->id ? 'selected' : '' }}>
+                    {{ $departemen->nama }}
+                </option>
                 @endforeach
             </select>
             <label for="departemen_id">Departemen</label>
             @error('departemen_id')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
 
@@ -112,7 +112,7 @@
                 name="jabatan" placeholder="Jabatan" value="{{ old('jabatan') }}">
             <label for="jabatan">Jabatan</label>
             @error('jabatan')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
     </div>
@@ -122,19 +122,19 @@
             name="password" placeholder="Password">
         <label for="password">Password</label>
         @error('password')
-            <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
     @unless ($isAdmin ?? false)
-        <div class="form-floating mb-3">
-            <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror"
-                id="password_confirmation" name="password_confirmation" placeholder="Konfirmasi Password">
-            <label for="password_confirmation">Konfirmasi Password</label>
-            @error('password_confirmation')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+    <div class="form-floating mb-3">
+        <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror"
+            id="password_confirmation" name="password_confirmation" placeholder="Konfirmasi Password">
+        <label for="password_confirmation">Konfirmasi Password</label>
+        @error('password_confirmation')
+        <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
     @endunless
 
     <div class="d-grid gap-2">
@@ -143,9 +143,9 @@
         </button>
 
         @unless ($isModal ?? false)
-            <div class="text-center mt-2">
-                Sudah punya akun? <a href="{{ route('login') }}" class="text-decoration-none">Masuk</a>
-            </div>
+        <div class="text-center mt-2">
+            Sudah punya akun? <a href="{{ route('login') }}" class="text-decoration-none">Masuk</a>
+        </div>
         @endunless
     </div>
 </form>

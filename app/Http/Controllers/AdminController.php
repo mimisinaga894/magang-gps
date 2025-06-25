@@ -10,6 +10,10 @@ use App\Models\Absensi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+
+
 
 class AdminController extends Controller
 {
@@ -84,9 +88,10 @@ class AdminController extends Controller
 
     public function dataKaryawan()
     {
-        $karyawan = Karyawan::with(['user', 'departemen'])->get();
-        return view('admin.karyawan.index', compact('karyawan'));
+        $karyawans = Karyawan::with(['user', 'departemen'])->paginate(10);
+        return view('admin.karyawan.data-karyawan', compact('karyawans'));
     }
+
 
     public function editUser($id)
     {
@@ -232,6 +237,7 @@ class AdminController extends Controller
         }
     }
 
+
     public function createUser()
     {
         $departemens = Departemen::all();
@@ -248,14 +254,14 @@ class AdminController extends Controller
             'role' => 'required|in:admin,karyawan',
             'gender' => 'nullable|in:L,P',
             'phone' => 'nullable|max:15',
-            'address' => 'nullable'
+            'address' => 'nullable',
         ];
 
         if ($request->role === 'karyawan') {
             $rules = array_merge($rules, [
                 'nik' => 'required|unique:karyawan,nik',
                 'departemen_id' => 'required|exists:departemen,id',
-                'jabatan' => 'required|max:50'
+                'jabatan' => 'required|max:50',
             ]);
         }
 
@@ -267,11 +273,11 @@ class AdminController extends Controller
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
-                'password' => bcrypt($validated['password']),
+                'password' => Hash::make($validated['password']),
                 'gender' => $validated['gender'] ?? null,
                 'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
-                'role' => $validated['role']
+                'role' => $validated['role'],
             ]);
 
             if ($user->role === 'karyawan') {
@@ -280,7 +286,7 @@ class AdminController extends Controller
                     'nik' => $validated['nik'],
                     'departemen_id' => $validated['departemen_id'],
                     'nama_lengkap' => $validated['name'],
-                    'jabatan' => $validated['jabatan']
+                    'jabatan' => $validated['jabatan'],
                 ]);
             }
 
@@ -288,6 +294,7 @@ class AdminController extends Controller
             return redirect()->route('admin.dashboard')->with('success', 'Pengguna berhasil ditambahkan.');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Store user error:', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal menambahkan pengguna.')->withInput();
         }
     }

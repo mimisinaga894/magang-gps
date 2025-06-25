@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard Admin - Sistem Absensi</title>
+    <title>Absensi Tracker - Sistem Absensi</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-
     <link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
 
     <style>
@@ -74,50 +73,6 @@
 
         .content-wrapper {
             margin-top: 80px;
-        }
-
-        .table th,
-        .table td {
-            vertical-align: middle;
-        }
-
-        .modal-box {
-            padding: 20px;
-        }
-
-        .modal-box input {
-            margin-bottom: 10px;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: rgba(0, 0, 0, 0.3);
-            font-style: italic;
-            margin-top: 50px;
-        }
-
-        #editModal {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1050;
-        }
-
-        #editModal .modal-box {
-            background: white;
-            max-width: 500px;
-            padding: 30px;
-            border-radius: 8px;
-        }
-
-        .btn-icon {
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .watermark {
@@ -190,61 +145,65 @@
         </div>
     </div>
 
-
     <div class="main-content">
         <nav class="top-navbar">
             <div>Selamat Datang, Administrator</div>
             <i class="bi bi-person-circle" style="font-size: 1.5rem;"></i>
         </nav>
-        <div class="container mt-5">
-            <h1 class="mb-4">Data Karyawan</h1>
 
-            @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
+        <div class="content-wrapper">
+            <h4>Absensi Tracker</h4>
 
-            <div class="card shadow-sm rounded">
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    Form Absensi Kehadiran - {{ date('d M Y') }}
+                </div>
                 <div class="card-body">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>No</th>
-                                <th>NIK</th>
-                                <th>Nama Lengkap</th>
-                                <th>Departemen</th>
-                                <th>Jabatan</th>
-                                <th>Email</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($karyawans as $index => $karyawan)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $karyawan->nik }}</td>
-                                <td>{{ $karyawan->user->name }}</td>
-                                <td>{{ $karyawan->departemen->nama ?? '-' }}</td>
-                                <td>{{ $karyawan->jabatan }}</td>
-                                <td>{{ $karyawan->user->email }}</td>
-                                <td>
-                                    <a href="{{ route('karyawan.edit', $karyawan->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                    <form action="{{ route('karyawan.destroy', $karyawan->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-center">Tidak ada data karyawan.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                    <div class="mt-3">
-                        {{ $karyawans->links() }}
-                    </div>
+                    @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    <form action="{{ route('admin.absensi.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label">Status Kehadiran</label>
+                            <select name="keterangan" class="form-control" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="Hadir">Hadir</option>
+                                <option value="Sakit">Sakit</option>
+                                <option value="Izin">Izin</option>
+                            </select>
+                        </div>
+
+                        <input type="hidden" name="latitude" id="latitude">
+                        <input type="hidden" name="longitude" id="longitude">
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle-fill"></i> Simpan Absensi
+                        </button>
+                    </form>
                 </div>
             </div>
+
+            <div class="alert alert-info mt-3" id="lokasi-status">
+                Mendeteksi lokasi pengguna...
+            </div>
         </div>
+    </div>
+
+    <script>
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                document.getElementById('latitude').value = pos.coords.latitude;
+                document.getElementById('longitude').value = pos.coords.longitude;
+                document.getElementById('lokasi-status').innerText = "Lokasi berhasil dideteksi.";
+            }, function() {
+                document.getElementById('lokasi-status').innerText = "Gagal mendeteksi lokasi.";
+            });
+        } else {
+            document.getElementById('lokasi-status').innerText = "Browser tidak mendukung geolocation.";
+        }
+    </script>
+</body>
+
+</html>
