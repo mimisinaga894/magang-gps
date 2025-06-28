@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\StatusPengajuanPresensi;
 use App\Models\Departemen;
 use App\Models\Karyawan;
 use App\Models\LokasiKantor;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AbsensiExport;
+use App\Models\Absensi;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class PresensiController extends Controller
 {
@@ -34,17 +35,17 @@ class PresensiController extends Controller
         $jam = date('H:i:s');
 
         $lokasi = $request->lokasi;
-        $folderPath = "public/unggah/presensi/";
-        $folderName = $nik . "-" . $tglPresensi . "-" . $jenisPresensi;
 
         $lokasiKantor = LokasiKantor::where('is_used', true)->first();
         $langtitudeKantor = $lokasiKantor->latitude;
         $longtitudeKantor = $lokasiKantor->longitude;
+
         $lokasiUser = explode(",", $lokasi);
         $langtitudeUser = $lokasiUser[0];
         $longtitudeUser = $lokasiUser[1];
 
         $jarak = round($this->validation_radius_presensi($langtitudeKantor, $longtitudeKantor, $langtitudeUser, $longtitudeUser), 2);
+
         if ($jarak > 33) {
             return response()->json([
                 'status' => 500,
@@ -54,19 +55,11 @@ class PresensiController extends Controller
             ]);
         }
 
-        $image = $request->image;
-        $imageParts = explode(";base64", $image);
-        $imageBase64 = base64_decode($imageParts[1]);
-
-        $fileName = $folderName . ".png";
-        $file = $folderPath . $fileName;
-
         if ($jenisPresensi == "masuk") {
             $data = [
                 "nik" => $nik,
                 "tanggal_presensi" => $tglPresensi,
                 "jam_masuk" => $jam,
-                "foto_masuk" => $fileName,
                 "lokasi_masuk" => $lokasi,
                 "created_at" => Carbon::now(),
                 "updated_at" => Carbon::now(),
@@ -75,19 +68,16 @@ class PresensiController extends Controller
         } elseif ($jenisPresensi == "keluar") {
             $data = [
                 "jam_keluar" => $jam,
-                "foto_keluar" => $fileName,
                 "lokasi_keluar" => $lokasi,
                 "updated_at" => Carbon::now(),
             ];
             $store = DB::table('presensi')
-                ->where('nik', auth()->guard('karyawan')->user()->nik)
-                ->where('tanggal_presensi', date('Y-m-d'))
+                ->where('nik', $nik)
+                ->where('tanggal_presensi', $tglPresensi)
                 ->update($data);
         }
 
-        if ($store) {
-            Storage::put($file, $imageBase64);
-        } else {
+        if (!$store) {
             return response()->json([
                 'status' => 500,
                 'success' => false,
@@ -103,18 +93,78 @@ class PresensiController extends Controller
             'jenis_presensi' => $jenisPresensi,
         ]);
     }
-
-    public function validation_radius_presensi($langtitudeKantor, $longtitudeKantor, $langtitudeUser, $longtitudeUser)
+    public function storeAbsensi(Request $request)
     {
-        $theta = $longtitudeKantor - $longtitudeUser;
-        $hitungKoordinat = (sin(deg2rad($langtitudeKantor)) * sin(deg2rad($langtitudeUser))) + (cos(deg2rad($langtitudeKantor)) * cos(deg2rad($langtitudeUser)) * cos(deg2rad($theta)));
-        $miles = rad2deg(acos($hitungKoordinat)) * 60 * 1.1515;
+        $request->validate([
+            'nik' => 'required|exists:karyawan,nik',
+            'keterangan' => 'required|in:Hadir,Sakit,Izin',
+            'latitude' => 'required',
+            'longitude' => 'required',
+        ]);
 
-        // $feet = $miles * 5280;
-        // $yards = $feet / 3;
+        $karyawan = Karyawan::with('departemen')->where('nik', $request->nik)->first();
 
-        $kilometers = $miles * 1.609344;
-        $meters = $kilometers * 1000;
+        DB::table('presensi')->insert([
+            'nik' => $karyawan->nik,
+            'tanggal_presensi' => now()->toDateString(),
+            'jam_masuk' => now()->toTimeString(),
+            'lokasi_masuk' => $request->latitude . ',' . $request->longitude,
+            'keterangan' => $request->keterangan,
+            'jabatan' => $karyawan->jabatan,
+            'departemen' => $karyawan->departemen->nama,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Absensi berhasil disimpan.');
+    }
+
+    public function formManualAbsensi()
+    {
+        $karyawans = Karyawan::with('departemen')->get();
+        return view('admin.absensi.manual-form', compact('karyawans'));
+    }
+    public function storeManualAbsensi(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'nama_lengkap' => 'required',
+            'jabatan' => 'required',
+            'departemen' => 'required',
+            'keterangan' => 'required|in:Hadir,Sakit,Izin',
+            'latitude' => 'required',
+            'longitude' => 'required',
+        ]);
+
+        DB::table('presensi')->insert([
+            'nik' => $request->nik,
+            'nama_lengkap' => $request->nama_lengkap,
+            'jabatan' => $request->jabatan,
+            'departemen' => $request->departemen,
+            'keterangan' => $request->keterangan,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'tanggal_presensi' => now()->format('Y-m-d'),
+            'jam_masuk' => now()->format('H:i:s'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Absensi manual berhasil disimpan.');
+    }
+
+
+
+    public function validation_radius_presensi($lat1, $lon1, $lat2, $lon2)
+    {
+        $theta = $lon1 - $lon2;
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2))
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = acos($dist);
+        $dist = rad2deg($dist);
+        $miles = $dist * 60 * 1.1515;
+        $km = $miles * 1.609344;
+        $meters = $km * 1000;
         return $meters;
     }
 
@@ -142,73 +192,6 @@ class PresensiController extends Controller
         return view('dashboard.presensi.search-history', compact('data'));
     }
 
-    public function pengajuanPresensi()
-    {
-        $title = "Izin Karyawan";
-        $riwayatPengajuanPresensi = DB::table("pengajuan_presensi")
-            ->where('nik', auth()->guard('karyawan')->user()->nik)
-            ->orderBy("tanggal_pengajuan", "asc")
-            ->paginate(10);
-        $bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        return view('dashboard.presensi.izin.index', compact('title', 'riwayatPengajuanPresensi', 'bulan'));
-    }
-
-    public function pengajuanPresensiCreate()
-    {
-        $title = "Form Pengajuan Presensi";
-        $statusPengajuan = StatusPengajuanPresensi::cases();
-        return view('dashboard.presensi.izin.create', compact('title', 'statusPengajuan'));
-    }
-
-    public function pengajuanPresensiStore(Request $request)
-    {
-        $nik = auth()->guard('karyawan')->user()->nik;
-        $tanggal_pengajuan = $request->tanggal_pengajuan;
-        $status = $request->status;
-        $keterangan = $request->keterangan;
-
-        $cekPengajuan = DB::table('pengajuan_presensi')
-            ->where('nik', auth()->guard('karyawan')->user()->nik)
-            ->whereDate('tanggal_pengajuan', Carbon::make($tanggal_pengajuan)->format('Y-m-d'))
-            ->where(function (Builder $query) {
-                $query->where('status_approved', 0)
-                    ->orWhere('status_approved', 1);
-            })
-            ->first();
-
-        if ($cekPengajuan) {
-            return to_route('karyawan.izin')->with("error", "Anda sudah menambahkan pengajuan pada tanggal " . Carbon::make($tanggal_pengajuan)->format('d-m-Y'));
-        } else {
-            $store = DB::table('pengajuan_presensi')->insert([
-                'nik' => $nik,
-                'tanggal_pengajuan' => $tanggal_pengajuan,
-                'status' => $status,
-                'keterangan' => $keterangan,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-        }
-
-        if ($store) {
-            return to_route('karyawan.izin')->with("success", "Berhasil menambahkan pengajuan");
-        } else {
-            return to_route('karyawan.izin')->with("error", "Gagal menambahkan pengajuan");
-        }
-    }
-
-    public function searchPengajuanHistory(Request $request)
-    {
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
-        $data = DB::table('pengajuan_presensi')
-            ->where('nik', auth()->guard('karyawan')->user()->nik)
-            ->whereMonth('tanggal_pengajuan', $bulan)
-            ->whereYear('tanggal_pengajuan', $tahun)
-            ->orderBy("tanggal_pengajuan", "asc")
-            ->get();
-        return view('dashboard.presensi.izin.search-history', compact('data'));
-    }
-
     public function monitoringPresensi(Request $request)
     {
         $query = DB::table('presensi as p')
@@ -225,150 +208,89 @@ class PresensiController extends Controller
         }
 
         $monitoring = $query->paginate(10);
-
         $lokasiKantor = LokasiKantor::where('is_used', true)->first();
 
         return view('admin.monitoring-presensi.index', compact('monitoring', 'lokasiKantor'));
     }
 
+
+    public function absensiTrackerAdmin(Request $request)
+    {
+        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+
+        $query = DB::table('presensi as p')
+            ->join('karyawan as k', 'p.nik', '=', 'k.nik')
+            ->select('p.*', 'k.nama_lengkap', 'k.jabatan');
+
+        if ($request->filled('karyawan_id')) {
+            $karyawan = Karyawan::find($request->karyawan_id);
+            if ($karyawan) {
+                $query->where('k.nik', $karyawan->nik);
+            }
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('p.tanggal_presensi', $request->tanggal);
+        } elseif ($request->filled('bulan') && $request->filled('tahun')) {
+            $query->whereMonth('p.tanggal_presensi', $request->bulan)
+                ->whereYear('p.tanggal_presensi', $request->tahun);
+        } else {
+            $query->whereDate('p.tanggal_presensi', now()->toDateString());
+        }
+
+        $absensiHariIni = $query->get();
+
+
+        $statistikQuery = DB::table('presensi as p')
+            ->join('karyawan as k', 'p.nik', '=', 'k.nik');
+
+        if ($request->filled('karyawan_id')) {
+            $karyawan = Karyawan::find($request->karyawan_id);
+            if ($karyawan) {
+                $statistikQuery->where('k.nik', $karyawan->nik);
+            }
+        }
+
+        if ($request->filled('tanggal')) {
+            $statistikQuery->whereDate('p.tanggal_presensi', $request->tanggal);
+        } elseif ($request->filled('bulan') && $request->filled('tahun')) {
+            $statistikQuery->whereMonth('p.tanggal_presensi', $request->bulan)
+                ->whereYear('p.tanggal_presensi', $request->tahun);
+        } else {
+            $statistikQuery->whereDate('p.tanggal_presensi', now()->toDateString());
+        }
+
+        $statistik = [
+            'hadir' => (clone $statistikQuery)->where('keterangan', 'Hadir')->count(),
+            'sakit' => (clone $statistikQuery)->where('keterangan', 'Sakit')->count(),
+            'izin'  => (clone $statistikQuery)->where('keterangan', 'Izin')->count(),
+        ];
+
+        return view('admin.absensi.absensi-tracker', compact('karyawans', 'absensiHariIni', 'statistik'));
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new AbsensiExport, 'rekap-absensi.xlsx');
+    }
+
+    public function exportPDF()
+    {
+
+        $absensi = Absensi::with('karyawan')->latest()->get();
+
+        return Pdf::loadView('admin.absensi.pdf', compact('absensi'))
+            ->setPaper('a4', 'landscape')
+            ->download('rekap-absensi.pdf');
+    }
+
+
     public function viewLokasi(Request $request)
     {
         if ($request->tipe == "lokasi_masuk") {
-            $data = DB::table('presensi')->where('nik', $request->nik)->first('lokasi_masuk');
-            return $data;
+            return DB::table('presensi')->where('nik', $request->nik)->first('lokasi_masuk');
         } elseif ($request->tipe == "lokasi_keluar") {
-            $data = DB::table('presensi')->where('nik', $request->nik)->first('lokasi_keluar');
-            return $data;
-        }
-    }
-
-    public function laporan(Request $request)
-    {
-        $bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        $karyawan = Karyawan::orderBy('nama_lengkap', 'asc')->get();
-        return view('admin.laporan.presensi', compact('bulan', 'karyawan'));
-    }
-
-    public function laporanPresensiKaryawan(Request $request)
-    {
-        $title = 'Laporan Presensi Karyawan';
-        $bulan = $request->bulan;
-        $karyawan = Karyawan::query()
-            ->with('departemen')
-            ->where('nik', $request->karyawan)
-            ->first();
-        $riwayatPresensi = DB::table("presensi")
-            ->where('nik', $request->karyawan)
-            ->whereMonth('tanggal_presensi', Carbon::make($bulan)->format('m'))
-            ->whereYear('tanggal_presensi', Carbon::make($bulan)->format('Y'))
-            ->orderBy("tanggal_presensi", "asc")
-            ->get();
-
-        // return view('admin.laporan.pdf.presensi-karyawan', compact('title', 'bulan', 'karyawan', 'riwayatPresensi'));
-        $pdf = Pdf::loadView('admin.laporan.pdf.presensi-karyawan', compact('title', 'bulan', 'karyawan', 'riwayatPresensi'));
-        return $pdf->stream($title . ' ' . $karyawan->nama_lengkap . '.pdf');
-    }
-
-    public function laporanPresensiSemuaKaryawan(Request $request)
-    {
-        $title = 'Laporan Presensi Semua Karyawan';
-        $bulan = $request->bulan;
-        $riwayatPresensi = DB::table("presensi as p")
-            ->join('karyawan as k', 'p.nik', '=', 'k.nik')
-            ->join('departemen as d', 'k.departemen_id', '=', 'd.id')
-            ->whereMonth('tanggal_presensi', Carbon::make($bulan)->format('m'))
-            ->whereYear('tanggal_presensi', Carbon::make($bulan)->format('Y'))
-            ->select(
-                'p.nik',
-                'k.nama_lengkap as nama_karyawan',
-                'k.jabatan as jabatan_karyawan',
-                'd.nama as nama_departemen'
-            )
-            ->selectRaw("COUNT(p.nik) as total_kehadiran, SUM(IF (jam_masuk > '08:00',1,0)) as total_terlambat")
-            ->groupBy(
-                'p.nik',
-                'k.nama_lengkap',
-                'k.jabatan',
-                'd.nama'
-            )
-            ->orderBy("tanggal_presensi", "asc")
-            ->get();
-
-        // return view('admin.laporan.pdf.presensi-semua-karyawan', compact('title', 'bulan', 'riwayatPresensi'));
-        $pdf = Pdf::loadView('admin.laporan.pdf.presensi-semua-karyawan', compact('title', 'bulan', 'riwayatPresensi'));
-        return $pdf->stream($title . '.pdf');
-    }
-
-    public function indexAdmin(Request $request)
-    {
-        $title = 'Administrasi Presensi';
-
-        $departemen = Departemen::get();
-
-        $query = DB::table('pengajuan_presensi as p')
-            ->join('karyawan as k', 'k.nik', '=', 'p.nik')
-            ->join('departemen as d', 'k.departemen_id', '=', 'd.id')
-            ->where('p.tanggal_pengajuan', '>=', Carbon::now()->startOfMonth()->format("Y-m-d"))
-            ->where('p.tanggal_pengajuan', '<=', Carbon::now()->endOfMonth()->format("Y-m-d"))
-            ->select('p.*', 'k.nama_lengkap as nama_karyawan', 'd.nama as nama_departemen', 'd.id as id_departemen')
-            ->orderBy('p.tanggal_pengajuan', 'asc');
-
-        if ($request->nik) {
-            $query->where('k.nik', 'LIKE', '%' . $request->nik . '%');
-        }
-        if ($request->karyawan) {
-            $query->where('k.nama_lengkap', 'LIKE', '%' . $request->karyawan . '%');
-        }
-        if ($request->departemen) {
-            $query->where('d.id', $request->departemen);
-        }
-        if ($request->tanggal_awal) {
-            $query->WhereDate('p.tanggal_pengajuan', '>=', Carbon::parse($request->tanggal_awal)->format('Y-m-d'));
-        }
-        if ($request->tanggal_akhir) {
-            $query->WhereDate('p.tanggal_pengajuan', '<=', Carbon::parse($request->tanggal_akhir)->format('Y-m-d'));
-        }
-        if ($request->status) {
-            $query->Where('p.status', $request->status);
-        }
-        if ($request->status_approved) {
-            $query->Where('p.status_approved', $request->status_approved);
-        }
-
-        $pengajuan = $query->paginate(10);
-
-        return view('admin.monitoring-presensi.administrasi-presensi', compact('title', 'pengajuan', 'departemen'));
-    }
-
-    public function persetujuanPresensi(Request $request)
-    {
-        if ($request->ajuan == "terima") {
-            $pengajuan = DB::table('pengajuan_presensi')->where('id', $request->id)->update([
-                'status_approved' => 2
-            ]);
-            if ($pengajuan) {
-                return response()->json(['success' => true, 'message' => 'Pengajuan presensi telah diterima']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Pengajuan presensi gagal diterima']);
-            }
-        } elseif ($request->ajuan == "tolak") {
-            $pengajuan = DB::table('pengajuan_presensi')->where('id', $request->id)->update([
-                'status_approved' => 3
-            ]);
-            if ($pengajuan) {
-                return response()->json(['success' => true, 'message' => 'Pengajuan presensi telah ditolak']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Pengajuan presensi gagal ditolak']);
-            }
-        } elseif ($request->ajuan == "batal") {
-            $pengajuan = DB::table('pengajuan_presensi')->where('id', $request->id)->update([
-                'status_approved' => 1
-            ]);
-            if ($pengajuan) {
-                return response()->json(['success' => true, 'message' => 'Pengajuan presensi telah dibatalkan']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Pengajuan presensi gagal dibatalkan']);
-            }
+            return DB::table('presensi')->where('nik', $request->nik)->first('lokasi_keluar');
         }
     }
 }

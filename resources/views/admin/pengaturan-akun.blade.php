@@ -150,13 +150,13 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.monitoring-presensi') }}" class="nav-link">
+                    <a href="{{ route('admin.absensi-tracker') }}" class="nav-link">
                         <i class="bi bi-clipboard-check"></i> Absensi Tracker
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.laporan.presensi') }}" class="nav-link">
-                        <i class="bi bi-file-earmark-text"></i> Laporan Absensi
+                    <a href="{{ route('jadwal.index') }}" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> Jadwal Kerja
                     </a>
                 </li>
                 <li class="nav-item">

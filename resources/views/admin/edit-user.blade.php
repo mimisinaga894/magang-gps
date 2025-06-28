@@ -101,7 +101,7 @@
                 @enderror
             </div>
 
-            <!-- Karyawan fields -->
+          
             <div id="karyawanFields" class="{{ $user->role === 'admin' ? 'd-none' : '' }}">
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control @error('nik') is-invalid @enderror" id="nik"
@@ -168,10 +168,7 @@
             }
 
             if (roleSelect) {
-                // Initial toggle based on current role
                 toggleKaryawanFields(roleSelect.value);
-
-                // Add change event listener
                 roleSelect.addEventListener('change', function() {
                     toggleKaryawanFields(this.value);
                 });

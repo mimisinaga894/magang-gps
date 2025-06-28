@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Absensi extends Model
 {
+    use HasFactory;
+
     protected $table = 'absensi';
 
     protected $fillable = [
@@ -21,19 +24,35 @@ class Absensi extends Model
         'latitude_pulang',
         'longitude_pulang',
         'status',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
-        'jadwal_masuk' => 'datetime',
-        'jadwal_pulang' => 'datetime',
-        'jam_masuk' => 'datetime',
-        'jam_pulang' => 'datetime',
+        'jadwal_masuk' => 'datetime:H:i:s',
+        'jadwal_pulang' => 'datetime:H:i:s',
+        'jam_masuk' => 'datetime:H:i:s',
+        'jam_pulang' => 'datetime:H:i:s',
+        'latitude_masuk' => 'float',
+        'longitude_masuk' => 'float',
+        'latitude_pulang' => 'float',
+        'longitude_pulang' => 'float',
     ];
 
-    public function karyawan(): BelongsTo
+
+    public function karyawan()
     {
         return $this->belongsTo(Karyawan::class);
+    }
+
+
+    public function scopeHariIni($query)
+    {
+        return $query->whereDate('tanggal', now()->toDateString());
+    }
+
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
     }
 }

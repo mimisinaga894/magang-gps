@@ -2,23 +2,33 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
 use App\Models\Absensi;
-use Illuminate\Contracts\View\View;
-use Maatwebsite\Excel\Concerns\FromView;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 
-class AbsensiExport implements FromView
+class AbsensiExport implements FromCollection, WithHeadings, WithMapping
 {
-    protected $user_id;
-
-    public function __construct($user_id)
+    public function collection()
     {
-        $this->user_id = $user_id;
+        return Absensi::with('karyawan')->latest()->get();
     }
 
-    public function view(): View
+    public function map($absensi): array
     {
-        $absensis = Absensi::where('user_id', $this->user_id)->get();
-        return view('karyawan.laporan_excel', compact('absensis'));
+        return [
+            $absensi->tanggal,
+            $absensi->karyawan->nik ?? '-',
+            $absensi->karyawan->nama_lengkap ?? '-',
+            $absensi->jam_masuk ?? '-',
+            $absensi->jam_pulang ?? '-',
+            $absensi->status,
+            $absensi->keterangan ?? '-',
+        ];
+    }
+
+    public function headings(): array
+    {
+        return ['Tanggal', 'NIK', 'Nama', 'Jam Masuk', 'Jam Pulang', 'Status', 'Keterangan'];
     }
 }

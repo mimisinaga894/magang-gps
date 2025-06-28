@@ -146,8 +146,8 @@
     <div class="sidebar">
         <div>
             <div class="logo text-center mb-4">
-                <img src="{{ asset('img/loho.png') }}" alt="Logo Sistem Absensi"
-                    style="max-width: 150px; height: auto;">
+                <img src="{{ asset('img/loho.png') }}" alt="Logo Sistem Absensi" />
+
             </div>
 
             <ul class="nav flex-column px-2">
@@ -158,8 +158,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#masterDataMenu" role="button"
-                        aria-expanded="false" aria-controls="masterDataMenu">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#masterDataMenu" role="button" aria-expanded="false" aria-controls="masterDataMenu">
                         <i class="bi bi-archive-fill"></i> Master Data
                         <i class="bi bi-caret-down-fill float-end"></i>
                     </a>
@@ -173,17 +172,17 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.monitoring-presensi') }}" class="nav-link">
+                    <a href="{{ route('admin.absensi-tracker') }}" class="nav-link">
                         <i class="bi bi-clipboard-check"></i> Absensi Tracker
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.laporan.presensi') }}" class="nav-link">
-                        <i class="bi bi-file-earmark-text"></i> Laporan Absensi
+                    <a href="{{ route('jadwal.index') }}" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> Jadwal Kerja
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.lokasi-kantor') }}" class="nav-link active">
+                    <a href="{{ route('admin.lokasi-kantor') }}" class="nav-link">
                         <i class="bi bi-geo-alt-fill"></i> Lokasi Kantor
                     </a>
                 </li>
@@ -192,8 +191,10 @@
                         <i class="bi bi-gear-fill"></i> Pengaturan Akun
                     </a>
                 </li>
+                </li>
                 <li class="nav-item mt-3">
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                        @csrf
                         <button type="submit" class="btn btn-link nav-link text-white"
                             style="width: 100%; text-align: left;">
                             <i class="bi bi-box-arrow-right"></i> Log Out
@@ -207,8 +208,6 @@
             &copy; 2025 by Mimi Sinaga - Programmer
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
     <div class="main-content">

@@ -14,7 +14,8 @@ use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\CutiController;
-
+use App\Http\Controllers\absensitraker;
+use App\Http\Controllers\JadwalKerjaController;
 
 
 Route::get('/', function () {
@@ -72,6 +73,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->group(function () {
 
         // Dashboard & Data
+        Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('/dashboard', [AdminController::class, 'showDashboard'])->name('admin.dashboard');
         Route::get('/data-karyawan', [AdminController::class, 'dataKaryawan'])->name('admin.dataKaryawan');
         Route::get('/data-departemen', [AdminController::class, 'dataDepartemen'])->name('admin.dataDepartemen');
@@ -98,14 +100,25 @@ Route::middleware('auth')->group(function () {
         Route::resource('karyawan', AdminKaryawanController::class);
 
 
-        // Presensi
-        Route::get('/monitoring-presensi', [PresensiController::class, 'monitoringPresensi'])->name('admin.monitoring-presensi');
-        Route::post('/monitoring-presensi', [PresensiController::class, 'viewLokasi'])->name('admin.monitoring-presensi.lokasi');
-
-        // Laporan Presensi
+        // PRESENSI
+        Route::get('/admin/absensi-tracker', [PresensiController::class, 'absensiTrackerAdmin'])->name('admin.absensi-tracker');
+        Route::post('/admin/absensi-tracker', [PresensiController::class, 'storeAbsensi'])->name('admin.absensi.store');
+        Route::get('/admin/absensi/manual', [PresensiController::class, 'formManualAbsensi'])->name('admin.absensi.manual-form');
+        Route::post('/admin/absensi/manual', [PresensiController::class, 'storeManualAbsensi'])->name('admin.absensi.manual.store');
+        Route::get('/admin/absensi/export/excel', [PresensiController::class, 'exportExcel'])->name('admin.absensi.export.excel');
+        Route::get('/admin/absensi/export/pdf', [PresensiController::class, 'exportPDF'])->name('admin.absensi.export.pdf');
         Route::get('/laporan/presensi', [PresensiController::class, 'laporan'])->name('admin.laporan.presensi');
-        Route::post('/laporan/presensi/karyawan', [PresensiController::class, 'laporanPresensiKaryawan'])->name('admin.laporan.presensi.karyawan');
-        Route::post('/laporan/presensi/semua-karyawan', [PresensiController::class, 'laporanPresensiSemuaKaryawan'])->name('admin.laporan.presensi.semua-karyawan');
+
+
+        // Jadwal Kerja
+        Route::prefix('admin')->group(function () {
+            Route::get('/jadwal-kerja', [JadwalKerjaController::class, 'index'])->name('jadwal.index');
+            Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
+            Route::post('/jadwal-kerja', [JadwalKerjaController::class, 'store'])->name('jadwal.store');
+        });
+        Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
+
+
 
         // Lokasi Kantor
         Route::get('/admin/lokasi-kantor', [AdminController::class, 'lokasiKantor'])->name('admin.lokasi-kantor');

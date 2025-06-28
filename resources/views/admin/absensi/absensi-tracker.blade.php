@@ -4,10 +4,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Absensi Tracker - Sistem Absensi</title>
+    <title>Dashboard Admin - Sistem Absensi</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
     <link href="{{ asset('css/admin.css') }}" rel="stylesheet" />
 
     <style>
@@ -75,12 +78,61 @@
             margin-top: 80px;
         }
 
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .modal-box {
+            padding: 20px;
+        }
+
+        .modal-box input {
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(0, 0, 0, 0.3);
+            font-style: italic;
+            margin-top: 50px;
+        }
+
+        #editModal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+        }
+
+        #editModal .modal-box {
+            background: white;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .btn-icon {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .watermark {
             text-align: center;
             font-size: 0.8rem;
             margin-top: auto;
             color: #ccc;
             font-style: italic;
+        }
+
+        .container-fluid,
+        main {
+            padding-top: 80px;
         }
     </style>
 </head>
@@ -111,13 +163,13 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.monitoring-presensi') }}" class="nav-link">
+                <a href="{{ route('admin.absensi-tracker') }}" class="nav-link">
                     <i class="bi bi-clipboard-check"></i> Absensi Tracker
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.laporan.presensi') }}" class="nav-link">
-                    <i class="bi bi-file-earmark-text"></i> Laporan Absensi
+                <a href="{{ route('jadwal.index') }}" class="nav-link">
+                    <i class="bi bi-file-earmark-text"></i> Jadwal Kerja
                 </a>
             </li>
             <li class="nav-item">
@@ -145,65 +197,196 @@
         </div>
     </div>
 
+
     <div class="main-content">
         <nav class="top-navbar">
             <div>Selamat Datang, Administrator</div>
             <i class="bi bi-person-circle" style="font-size: 1.5rem;"></i>
         </nav>
 
-        <div class="content-wrapper">
-            <h4>Absensi Tracker</h4>
+        <div class="row align-items-center mb-3" style="margin-top: 100px;">
 
-            <div class="card mt-4">
-                <div class="card-header bg-primary text-white">
-                    Form Absensi Kehadiran - {{ date('d M Y') }}
+            <div class="row mb-4">
+                <div class="col-md-6 col-12 mb-2 mb-md-0">
+                    <a href="{{ route('admin.absensi.manual-form') }}" class="btn btn-primary shadow-sm">
+                        <i class="bi bi-plus-circle"></i> Tambah Absensi Manual
+                    </a>
                 </div>
-                <div class="card-body">
-                    @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                    @endif
+                <div class="col-md-6 col-12 text-md-end">
+                    <div class="d-inline-flex gap-2">
+                        <a href="{{ route('admin.absensi.export.excel') }}" class="btn btn-outline-success shadow-sm px-3">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+                        </a>
+                        <a href="{{ route('admin.absensi.export.pdf') }}" class="btn btn-outline-danger shadow-sm px-3">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
+                        </a>
 
-                    <form action="{{ route('admin.absensi.store') }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Status Kehadiran</label>
-                            <select name="keterangan" class="form-control" required>
-                                <option value="">-- Pilih Status --</option>
-                                <option value="Hadir">Hadir</option>
-                                <option value="Sakit">Sakit</option>
-                                <option value="Izin">Izin</option>
-                            </select>
-                        </div>
-
-                        <input type="hidden" name="latitude" id="latitude">
-                        <input type="hidden" name="longitude" id="longitude">
-
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-circle-fill"></i> Simpan Absensi
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
-            <div class="alert alert-info mt-3" id="lokasi-status">
-                Mendeteksi lokasi pengguna...
+        </div>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-info text-white">Rekap Absensi</div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>NIK</th>
+                            <th>Nama</th>
+                            <th>Jabatan</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Keluar</th>
+                            <th>Lokasi Masuk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($absensiHariIni as $item)
+                        <tr>
+                            <td>{{ $item->tanggal_presensi }}</td>
+                            <td>{{ $item->nik }}</td>
+                            <td>{{ $item->nama_lengkap }}</td>
+                            <td>{{ $item->jabatan }}</td>
+                            <td>{{ $item->jam_masuk ?? '-' }}</td>
+                            <td>{{ $item->jam_keluar ?? '-' }}</td>
+                            <td>{{ $item->lokasi_masuk ?? '-' }}</td>
+                        </tr>
+                        @empty
+                        <form method="GET" action="{{ route('admin.absensi-tracker') }}" class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Filter Berdasarkan</label>
+                                <select name="periode" class="form-select" onchange="this.form.submit()">
+                                    <option value="hari" {{ request('periode') == 'hari' ? 'selected' : '' }}>Hari Ini</option>
+                                    <option value="minggu" {{ request('periode') == 'minggu' ? 'selected' : '' }}>Minggu Ini</option>
+                                    <option value="bulan" {{ request('periode') == 'bulan' ? 'selected' : '' }}>Bulan Ini</option>
+                                    <option value="tahun" {{ request('periode') == 'tahun' ? 'selected' : '' }}>Tahun Ini</option>
+                                </select>
+                            </div>
+                        </form>
+                        <br>
+                        <br>
+                        <tr>
+                            <td colspan="7" class="text-center">Belum ada data absensi.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
             </div>
         </div>
-    </div>
 
-    <script>
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                document.getElementById('latitude').value = pos.coords.latitude;
-                document.getElementById('longitude').value = pos.coords.longitude;
-                document.getElementById('lokasi-status').innerText = "Lokasi berhasil dideteksi.";
-            }, function() {
-                document.getElementById('lokasi-status').innerText = "Gagal mendeteksi lokasi.";
-            });
-        } else {
-            document.getElementById('lokasi-status').innerText = "Browser tidak mendukung geolocation.";
-        }
-    </script>
-</body>
 
-</html>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-white">Filter Absensi</div>
+            <div class="card-body">
+                <form method="GET" action="{{ route('admin.absensi-tracker') }}" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="karyawan_id" class="form-label">Nama Karyawan</label>
+                        <select name="karyawan_id" id="karyawan_id" class="form-select">
+                            <option value="">-- Semua Karyawan --</option>
+                            @foreach($karyawans as $k)
+                            <option value="{{ $k->id }}" {{ request('karyawan_id') == $k->id ? 'selected' : '' }}>
+                                {{ $k->nama_lengkap }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="tanggal" class="form-label">Tanggal</label>
+                        <input type="date" name="tanggal" id="tanggal" value="{{ request('tanggal') }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="bulan" class="form-label">Bulan</label>
+                        <select name="bulan" id="bulan" class="form-select">
+                            <option value="">-- Bulan --</option>
+                            @foreach(range(1,12) as $b)
+                            <option value="{{ $b }}" {{ request('bulan') == $b ? 'selected' : '' }}>
+                                {{ DateTime::createFromFormat('!m', $b)->format('F') }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="tahun" class="form-label">Tahun</label>
+                        <input type="number" name="tahun" id="tahun" value="{{ request('tahun') ?? date('Y') }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <div class="card mt-4 shadow-sm">
+            <div class="card-header bg-success text-white">Statistik Kehadiran</div>
+            <div class="card-body">
+                <div class="row text-center mb-4">
+                    <div class="col">
+                        <h6>Hadir</h6>
+                        <p class="fs-4 text-success fw-bold">{{ $statistik['hadir'] }}</p>
+                    </div>
+                    <div class="col">
+                        <h6>Sakit</h6>
+                        <p class="fs-4 text-warning fw-bold">{{ $statistik['sakit'] }}</p>
+                    </div>
+                    <div class="col">
+                        <h6>Izin</h6>
+                        <p class="fs-4 text-info fw-bold">{{ $statistik['izin'] }}</p>
+                    </div>
+                </div>
+                <canvas id="absensiChart" height="120"></canvas>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const ctx = document.getElementById('absensiChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Hadir', 'Sakit', 'Izin'],
+                        datasets: [{
+                            data: [{
+                                    {
+                                        (int) $statistik['hadir']
+                                    }
+                                },
+                                {
+                                    {
+                                        (int) $statistik['sakit']
+                                    }
+                                },
+                                {
+                                    {
+                                        (int) $statistik['izin']
+                                    }
+                                }
+                            ],
+                            backgroundColor: ['#198754', '#ffc107', '#0dcaf0'],
+                            borderColor: ['#ffffff'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        </div>
+        </script>
