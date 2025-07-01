@@ -122,23 +122,22 @@ Route::middleware('auth')->group(function () {
 
         // Lokasi Kantor
         Route::get('/admin/lokasi-kantor', [AdminController::class, 'lokasiKantor'])->name('admin.lokasi-kantor');
+    });
 
+    // ==================== KARYAWAN ==================== //
 
-        // ==================== KARYAWAN ==================== //
+    Route::prefix('karyawan')->group(function () {
+        Route::get('/dashboard', [KaryawanDashboardController::class, 'showDashboard'])->name('karyawan.dashboard');
+        Route::post('/absen-masuk', [KaryawanDashboardController::class, 'absenMasuk'])->name('absen.masuk');
+        Route::post('/absen-pulang', [KaryawanDashboardController::class, 'absenPulang'])->name('absen.pulang');
 
-        Route::prefix('karyawan')->group(function () {
-            Route::get('/dashboard', [KaryawanDashboardController::class, 'showDashboard'])->name('karyawan.dashboard');
-            Route::post('/absen-masuk', [KaryawanDashboardController::class, 'absenMasuk'])->name('absen.masuk');
-            Route::post('/absen-pulang', [KaryawanDashboardController::class, 'absenPulang'])->name('absen.pulang');
+        //Laporan    
+        Route::get('/export-excel', [KaryawanDashboardController::class, 'exportExcel'])->name('karyawan.laporan.excel');
+        Route::get('/export-pdf', [KaryawanDashboardController::class, 'exportPdf'])->name('karyawan.laporan.pdf');
+    });
 
-            //Laporan    
-            Route::get('/export-excel', [KaryawanDashboardController::class, 'exportExcel'])->name('karyawan.laporan.excel');
-            Route::get('/export-pdf', [KaryawanDashboardController::class, 'exportPdf'])->name('karyawan.laporan.pdf');
-        });
-
-        // Cuti
-        Route::middleware(['auth'])->group(function () {
-            Route::post('/cuti/submit', [CutiController::class, 'store'])->name('cuti.submit');
-        });
+    // Cuti
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/cuti/submit', [CutiController::class, 'store'])->name('cuti.submit');
     });
 });

@@ -358,7 +358,7 @@
                             return false;
                         }
 
-                        alert("Balasan untuk feedback #" + id + " berhasil dikirim! (Simulasi)");
+                        alert("Balasan untuk feedback #" + id + " berhasil dikirim!");
 
                         return false;
                     }

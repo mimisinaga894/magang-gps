@@ -23,6 +23,10 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
+            // Cek apakah ini adalah registrasi admin
+            $isAdmin = $request->has('admin') && $request->input('admin') === 'true';
+
+            // Base rules yang selalu ada
             $rules = [
                 'name' => 'required|max:255',
                 'username' => 'required|unique:users,username',
@@ -30,13 +34,10 @@ class AuthController extends Controller
                 'gender' => 'required|in:L,P',
                 'phone' => 'required|max:15',
                 'address' => 'required',
-                'password' => 'required|min:6|confirmed',
-                'password_confirmation' => 'required',
-                'nik' => 'required|unique:karyawan|min:16|max:16',
-                'departemen_id' => 'required|exists:departemen,id',
-                'jabatan' => 'required|max:50'
+                'password' => 'required|min:6',
             ];
 
+            // Base messages
             $messages = [
                 'name.required' => 'Nama lengkap wajib diisi',
                 'username.required' => 'Username wajib diisi',
@@ -50,19 +51,42 @@ class AuthController extends Controller
                 'address.required' => 'Alamat wajib diisi',
                 'password.required' => 'Password wajib diisi',
                 'password.min' => 'Password minimal 6 karakter',
-                'password.confirmed' => 'Konfirmasi password tidak cocok',
-                'password_confirmation.required' => 'Konfirmasi password wajib diisi',
-                'nik.required' => 'NIK wajib diisi',
-                'nik.unique' => 'NIK sudah digunakan',
-                'nik.min' => 'NIK harus 16 karakter',
-                'nik.max' => 'NIK harus 16 karakter',
-                'departemen_id.required' => 'Departemen wajib dipilih',
-                'jabatan.required' => 'Jabatan wajib diisi'
             ];
+
+            // Jika bukan admin, tambahkan validasi konfirmasi password
+            if (!$isAdmin) {
+                $rules['password'] = 'required|min:6|confirmed';
+                $rules['password_confirmation'] = 'required';
+                $messages['password.confirmed'] = 'Konfirmasi password tidak cocok';
+                $messages['password_confirmation.required'] = 'Konfirmasi password wajib diisi';
+            }
+
+            // Jika admin, tambahkan validasi role
+            if ($isAdmin) {
+                $rules['role'] = 'required|in:admin,karyawan';
+                $messages['role.required'] = 'Role wajib dipilih';
+            }
+
+            // Validasi untuk karyawan (jika role bukan admin atau jika bukan admin registration)
+            $role = $request->input('role', 'karyawan');
+            if (!$isAdmin || ($isAdmin && $role === 'karyawan')) {
+                $rules['nik'] = 'required|unique:karyawan|min:16|max:16';
+                $rules['departemen_id'] = 'required|exists:departemen,id';
+                $rules['jabatan'] = 'required|max:50';
+
+                $messages['nik.required'] = 'NIK wajib diisi';
+                $messages['nik.unique'] = 'NIK sudah digunakan';
+                $messages['nik.min'] = 'NIK harus 16 karakter';
+                $messages['nik.max'] = 'NIK harus 16 karakter';
+                $messages['departemen_id.required'] = 'Departemen wajib dipilih';
+                $messages['jabatan.required'] = 'Jabatan wajib diisi';
+            }
 
             $validated = $request->validate($rules, $messages);
 
             DB::beginTransaction();
+
+            $userRole = $isAdmin ? $validated['role'] : 'karyawan';
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -72,21 +96,29 @@ class AuthController extends Controller
                 'phone' => $validated['phone'],
                 'address' => $validated['address'],
                 'password' => Hash::make($validated['password']),
-                'role' => 'karyawan'
+                'role' => $userRole
             ]);
 
-            Karyawan::create([
-                'user_id' => $user->id,
-                'nik' => $validated['nik'],
-                'departemen_id' => $validated['departemen_id'],
-                'nama_lengkap' => $validated['name'],
-                'jabatan' => $validated['jabatan']
-            ]);
+            // Buat record karyawan jika role adalah karyawan
+            if ($userRole === 'karyawan') {
+                Karyawan::create([
+                    'user_id' => $user->id,
+                    'nik' => $validated['nik'],
+                    'departemen_id' => $validated['departemen_id'],
+                    'nama_lengkap' => $validated['name'],
+                    'jabatan' => $validated['jabatan']
+                ]);
+            }
 
             DB::commit();
 
+            // Redirect berdasarkan role
             Auth::login($user);
-            return redirect()->route('karyawan.dashboard')->with('success', 'Registrasi berhasil!');
+            if ($userRole === 'admin') {
+                return redirect()->route('admin.dashboard')->with('success', 'Registrasi admin berhasil!');
+            } else {
+                return redirect()->route('karyawan.dashboard')->with('success', 'Registrasi berhasil!');
+            }
         } catch (ValidationException $e) {
             return back()->withInput()->withErrors($e->errors());
         } catch (\Exception $e) {

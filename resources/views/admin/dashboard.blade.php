@@ -338,29 +338,6 @@
                     toggleKaryawanFields(roleSelect.value);
                 }
 
-                const modalForm = document.getElementById('modalRegisterForm');
-                modalForm?.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    try {
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: new FormData(this),
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            window.location.reload();
-                        } else {
-                            showErrors(data.errors);
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                    }
-                });
 
                 function showErrors(errors) {
 
