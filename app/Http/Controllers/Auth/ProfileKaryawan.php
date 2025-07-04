@@ -8,21 +8,21 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-class ProfileController extends Controller
+class ProfileKaryawan extends Controller
 {
     /**
-     * Menampilkan form pengaturan akun admin.
+     * Menampilkan form pengaturan akun karyawan.
      *
      * @return \Illuminate\View\View
      */
     public function edit()
     {
         $user = Auth::user();
-        return view('admin.pengaturan-akun', compact('user'));
+        return view('karyawan.pengaturanakunkaryawan', compact('user'));
     }
 
     /**
-     * Memperbarui data akun admin.
+     * Memperbarui data akun karyawan.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
@@ -37,10 +37,8 @@ class ProfileController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-
         $user->name = $request->name;
         $user->email = $request->email;
-
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -48,7 +46,6 @@ class ProfileController extends Controller
 
         $user->save();
 
-
-        return redirect()->route('admin.pengaturan-akun')->with('success', 'Akun berhasil diperbarui!');
+        return redirect()->route('karyawan.profile')->with('success', 'Akun berhasil diperbarui!');
     }
 }

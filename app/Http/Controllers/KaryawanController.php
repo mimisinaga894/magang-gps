@@ -115,6 +115,6 @@ class KaryawanController extends Controller
 
     public function lokasiKantor()
     {
-        return view('shared.lokasi-kantor');
+        return view('karyawan.lokasi-kantor');
     }
 }

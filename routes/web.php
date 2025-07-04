@@ -7,15 +7,18 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\KaryawanController as KaryawanDashboardController;
 use App\Http\Controllers\Admin\KaryawanController as AdminKaryawanController;
-use App\Http\Controllers\LokasiKantorController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\Auth\ProfileKaryawan;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\absensitraker;
 use App\Http\Controllers\JadwalKerjaController;
+
+use App\Http\Controllers\KaryawanController;
+
 
 
 Route::get('/', function () {
@@ -58,11 +61,6 @@ Route::get('/login/google/callback', [SocialiteController::class, 'callback'])->
 // ==================== AUTHENTICATED ROUTES ==================== //
 Route::middleware('auth')->group(function () {
 
-    // Profile
-    Route::middleware('auth')->group(function () {
-        Route::get('/admin/pengaturan-akun', [ProfileController::class, 'edit'])->name('admin.pengaturan-akun');
-        Route::patch('/admin/pengaturan-akun', [ProfileController::class, 'update'])->name('profile.update');
-    });
 
     // dashboard
     Route::get('/dashboard', function () {
@@ -119,25 +117,43 @@ Route::middleware('auth')->group(function () {
         Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
 
 
-
         // Lokasi Kantor
         Route::get('/admin/lokasi-kantor', [AdminController::class, 'lokasiKantor'])->name('admin.lokasi-kantor');
     });
 
-    // ==================== KARYAWAN ==================== //
+    // Profile
+    Route::middleware('auth')->group(function () {
+        Route::get('/admin/pengaturan-akun', [ProfileController::class, 'edit'])->name('admin.pengaturan-akun');
+        Route::patch('/admin/pengaturan-akun', [ProfileController::class, 'update'])->name('profile.update');
+    });
 
-    Route::prefix('karyawan')->group(function () {
+    // ==================== KARYAWAN ==================== // 
+
+    Route::prefix('karyawan')->middleware('auth')->group(function () {
+        // Rute Dashboard
         Route::get('/dashboard', [KaryawanDashboardController::class, 'showDashboard'])->name('karyawan.dashboard');
+
+
+
+        // Profile Karyawan
+        Route::prefix('karyawan')->middleware('auth')->group(function () {
+            Route::get('/profile', [ProfileKaryawan::class, 'edit'])->name('karyawan.profile');
+            Route::patch('/profile', [ProfileKaryawan::class, 'update'])->name('karyawan.profile.update');
+        });
+
+
+        // Absensi
         Route::post('/absen-masuk', [KaryawanDashboardController::class, 'absenMasuk'])->name('absen.masuk');
         Route::post('/absen-pulang', [KaryawanDashboardController::class, 'absenPulang'])->name('absen.pulang');
 
-        //Laporan    
+        // Laporan (Excel & PDF)
         Route::get('/export-excel', [KaryawanDashboardController::class, 'exportExcel'])->name('karyawan.laporan.excel');
         Route::get('/export-pdf', [KaryawanDashboardController::class, 'exportPdf'])->name('karyawan.laporan.pdf');
-    });
 
-    // Cuti
-    Route::middleware(['auth'])->group(function () {
+        // Cuti
         Route::post('/cuti/submit', [CutiController::class, 'store'])->name('cuti.submit');
+
+        // Lokasi Kantor
+        Route::get('/lokasi-kantor', [KaryawanDashboardController::class, 'lokasiKantor'])->name('karyawan.lokasi-kantor');
     });
 });
