@@ -1,0 +1,99 @@
+---
+services:
+  # PHP-FPM Service
+  absensi-php:
+    build:
+      context: .
+      dockerfile: ./docker/common/php-fpm/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: absensi-php
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      - absensi-mysql
+      - absensi-redis
+
+  # Nginx Service
+  absensi-nginx:
+    build:
+      context: .
+      dockerfile: ./docker/common/nginx/Dockerfile
+    container_name: absensi-nginx
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html:ro
+    networks:
+      - frontend
+      - backend
+    labels:
+      - "traefik.enable=true"      
+      - "traefik.http.routers.laravel-http.rule=Host(`absensi.dev.joppanaditya.my.id`)"
+      - "traefik.http.routers.laravel-http.entrypoints=web"
+      - "traefik.http.routers.laravel-http.middlewares=redirect-to-https"      
+      - "traefik.http.routers.laravel.rule=Host(`absensi.dev.joppanaditya.my.id`)"
+      - "traefik.http.routers.laravel.entrypoints=websecure"
+      - "traefik.http.routers.laravel.tls=true"
+      - "traefik.http.routers.laravel.tls.certresolver=cloudflare"      
+      - "traefik.http.services.laravel.loadbalancer.server.port=80"
+    depends_on:
+      - absensi-php
+
+  # MySQL Service
+  absensi-mysql:
+    image: mysql:8.0
+    container_name: absensi-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+    networks:
+      - backend
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis Service
+  absensi-redis:
+    image: redis:7-alpine
+    container_name: absensi-redis
+    restart: unless-stopped
+    networks:
+      - backend
+
+  # Workspace Service (Optional - untuk development)
+  absensi-workspace:
+    build:
+      context: .
+      dockerfile: ./docker/development/workspace/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: absensi-workspace
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/var/www/html
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      - absensi-mysql
+      - absensi-redis
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
