@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('presensis', function (Blueprint $table) {
+        Schema::create('jadwal_kerja', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('karyawan_id')->constrained('karyawan');
+            $table->date('tanggal');
+            $table->enum('shift', ['pagi', 'siang', 'malam']);
             $table->timestamps();
         });
     }
@@ -22,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('presensis');
+        Schema::dropIfExists('jadwal_kerja');
     }
 };

@@ -1,0 +1,59 @@
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker/
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+docs/
+*.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Environment
+.env.example
+.env.local
+.env.staging
+.env.testing
+
+# Build artifacts
+node_modules/
+npm-debug.log
+yarn-error.log
+public/mix-manifest.json
+
+# Cache
+bootstrap/cache/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/logs/
+
+# Other
+.editorconfig
+.gitkeep
+.gitignore
+.styleci.yml
+composer.lock
+package-lock.json
+yarn.lock

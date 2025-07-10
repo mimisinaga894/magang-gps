@@ -227,14 +227,12 @@
             <i class="bi bi-gear-fill"></i> Pengaturan Akun
         </a>
 
-
         <form action="{{ route('logout') }}" method="POST">
+            @csrf
             <button type="submit" class="btn btn-link nav-link text-white" style="width: 100%; text-align: left;">
                 <i class="bi bi-box-arrow-right"></i> Log Out
             </button>
         </form>
-        </li>
-        </ul>
 
         <div class="watermark">
             &copy; 2025 by Mimi Sinaga - Programmer

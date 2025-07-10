@@ -71,7 +71,6 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->group(function () {
 
         // Dashboard & Data
-        Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('/dashboard', [AdminController::class, 'showDashboard'])->name('admin.dashboard');
         Route::get('/data-karyawan', [AdminController::class, 'dataKaryawan'])->name('admin.dataKaryawan');
         Route::get('/data-departemen', [AdminController::class, 'dataDepartemen'])->name('admin.dataDepartemen');
@@ -85,7 +84,6 @@ Route::middleware('auth')->group(function () {
 
         // Departemen
         Route::get('/departemen', [DepartemenController::class, 'index'])->name('admin.departemen');
-        Route::get('/admin/data-departemen', [AdminController::class, 'dataDepartemen'])->name('admin.dataDepartemen');
         Route::post('/departemen/tambah', [DepartemenController::class, 'store'])->name('admin.departemen.store');
         Route::get('/departemen/perbarui', [DepartemenController::class, 'edit'])->name('admin.departemen.edit');
         Route::post('/departemen/perbarui', [DepartemenController::class, 'update'])->name('admin.departemen.update');
@@ -94,7 +92,6 @@ Route::middleware('auth')->group(function () {
 
         //karyawan
         Route::get('/karyawan', [AdminKaryawanController::class, 'index'])->name('admin.karyawan.index');
-        Route::get('/admin/data-karyawan', [AdminController::class, 'dataKaryawan'])->name('admin.dataKaryawan');
         Route::resource('karyawan', AdminKaryawanController::class);
 
 
@@ -114,7 +111,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
             Route::post('/jadwal-kerja', [JadwalKerjaController::class, 'store'])->name('jadwal.store');
         });
-        Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
 
 
         // Lokasi Kantor

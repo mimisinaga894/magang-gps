@@ -54,12 +54,12 @@ class AdminController extends Controller
             Carbon::now()->startOfWeek(),
             Carbon::now()->endOfWeek()
         ])
-            ->selectRaw('
+            ->selectRaw("
             DATE(tanggal) as date,
-            COUNT(CASE WHEN status = "hadir" THEN 1 END) as hadir_count,
-            COUNT(CASE WHEN status = "sakit" THEN 1 END) as sakit_count,
-            COUNT(CASE WHEN status = "izin" THEN 1 END) as izin_count
-        ')
+            COUNT(CASE WHEN status = 'hadir' THEN 1 END) as hadir_count,
+            COUNT(CASE WHEN status = 'sakit' THEN 1 END) as sakit_count,
+            COUNT(CASE WHEN status = 'izin' THEN 1 END) as izin_count
+        ")
             ->groupBy('date')
             ->orderBy('date')
             ->get()
