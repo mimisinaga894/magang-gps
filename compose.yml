@@ -20,6 +20,10 @@ services:
       - "traefik.http.routers.absensi.tls.certresolver=cloudflare"
       - "traefik.http.routers.absensi.service=absensi-svc"
       - "traefik.http.services.absensi-svc.loadbalancer.server.port=80"
+      - "traefik.http.routers.absensi-insecure.rule=Host(`absensi.joppanaditya.my.id`)"
+      - "traefik.http.routers.absensi-insecure.entrypoints=web"
+      - "traefik.http.routers.absensi-insecure.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
   php-fpm:
     container_name: absensi_php
