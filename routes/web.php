@@ -78,8 +78,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit-user/{id}', [AdminController::class, 'editUser'])->name('admin.editUser');
         Route::put('/update-user/{id}', [AdminController::class, 'updateUser'])->name('admin.updateUser');
         Route::delete('/delete-user/{id}', [AdminController::class, 'deleteUser'])->name('admin.deleteUser');
-        Route::get('/admin/user/create', [AdminController::class, 'createUser'])->name('admin.user.create');
-        Route::post('/admin/user/store', [AdminController::class, 'storeUser'])->name('admin.storeUser');
+        Route::get('/user/create', [AdminController::class, 'createUser'])->name('admin.user.create');
+        Route::post('/user/store', [AdminController::class, 'storeUser'])->name('admin.storeUser');
 
 
         // Departemen
@@ -96,31 +96,27 @@ Route::middleware('auth')->group(function () {
 
 
         // PRESENSI
-        Route::get('/admin/absensi-tracker', [PresensiController::class, 'absensiTrackerAdmin'])->name('admin.absensi-tracker');
-        Route::post('/admin/absensi-tracker', [PresensiController::class, 'storeAbsensi'])->name('admin.absensi.store');
-        Route::get('/admin/absensi/manual', [PresensiController::class, 'formManualAbsensi'])->name('admin.absensi.manual-form');
-        Route::post('/admin/absensi/manual', [PresensiController::class, 'storeManualAbsensi'])->name('admin.absensi.manual.store');
-        Route::get('/admin/absensi/export/excel', [PresensiController::class, 'exportExcel'])->name('admin.absensi.export.excel');
-        Route::get('/admin/absensi/export/pdf', [PresensiController::class, 'exportPDF'])->name('admin.absensi.export.pdf');
+        Route::get('/absensi-tracker', [PresensiController::class, 'absensiTrackerAdmin'])->name('admin.absensi-tracker');
+        Route::post('/absensi-tracker', [PresensiController::class, 'storeAbsensi'])->name('admin.absensi.store');
+        Route::get('/absensi/manual', [PresensiController::class, 'formManualAbsensi'])->name('admin.absensi.manual-form');
+        Route::post('/absensi/manual', [PresensiController::class, 'storeManualAbsensi'])->name('admin.absensi.manual.store');
+        Route::get('/absensi/export/excel', [PresensiController::class, 'exportExcel'])->name('admin.absensi.export.excel');
+        Route::get('/absensi/export/pdf', [PresensiController::class, 'exportPDF'])->name('admin.absensi.export.pdf');
         Route::get('/laporan/presensi', [PresensiController::class, 'laporan'])->name('admin.laporan.presensi');
 
 
         // Jadwal Kerja
-        Route::prefix('admin')->group(function () {
-            Route::get('/jadwal-kerja', [JadwalKerjaController::class, 'index'])->name('jadwal.index');
-            Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
-            Route::post('/jadwal-kerja', [JadwalKerjaController::class, 'store'])->name('jadwal.store');
-        });
+        Route::get('/jadwal-kerja', [JadwalKerjaController::class, 'index'])->name('jadwal.index');
+        Route::get('/jadwal-kerja/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
+        Route::post('/jadwal-kerja', [JadwalKerjaController::class, 'store'])->name('jadwal.store');
 
 
         // Lokasi Kantor
-        Route::get('/admin/lokasi-kantor', [AdminController::class, 'lokasiKantor'])->name('admin.lokasi-kantor');
-    });
-
-    // Profile
-    Route::middleware('auth')->group(function () {
-        Route::get('/admin/pengaturan-akun', [ProfileController::class, 'edit'])->name('admin.pengaturan-akun');
-        Route::patch('/admin/pengaturan-akun', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/lokasi-kantor', [AdminController::class, 'lokasiKantor'])->name('admin.lokasi-kantor');
+        
+        // Profile
+        Route::get('/pengaturan-akun', [ProfileController::class, 'edit'])->name('admin.pengaturan-akun');
+        Route::patch('/pengaturan-akun', [ProfileController::class, 'update'])->name('profile.update');
     });
 
     // ==================== KARYAWAN ==================== // 
